@@ -1,0 +1,3493 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>商家经营 CRM · 小红书商业化</title>
+<meta name="description" content="面向小红书商业化平台侧运营的商家经营 CRM 演示：商业化大盘、商家分层管理、消费者转化链路断点诊断，以及打法卡与产品需求两种沉淀物的闭环。单文件纯前端作品，全部数据为虚构。">
+<style>
+:root{
+  --red:#FF2442; --red-600:#E51E3A; --red-700:#C4162E; --red-50:#FFF1F3; --red-100:#FFE0E5;
+  --bg:#F6F6F8; --card:#FFFFFF; --line:#EDEDF0; --line2:#E2E2E8;
+  --t1:#1B1B1F; --t2:#66666E; --t3:#9A9AA2; --t4:#C2C2C9;
+  --green:#00B578; --green-50:#E7F8F1;
+  --orange:#FF8F1F; --orange-50:#FFF4E6;
+  --blue:#3B6EFF; --blue-50:#EDF2FF;
+  --purple:#7B5CFF; --purple-50:#F2EEFF;
+  --r-s:8px; --r-m:12px; --r-l:16px; --r-xl:20px;
+  --sh:0 1px 2px rgba(22,22,32,.04), 0 4px 14px rgba(22,22,32,.045);
+  --sh-hover:0 2px 6px rgba(22,22,32,.06), 0 10px 26px rgba(22,22,32,.08);
+  --sw:218px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#DCDCE2;border-radius:99px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- shell ---------- */
+.app{display:flex;min-height:100vh}
+
+.sidebar{
+  width:var(--sw);flex:0 0 var(--sw);position:fixed;inset:0 auto 0 0;z-index:40;
+  background:var(--card);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:0 12px 12px;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 10px 16px}
+.brand-mark{
+  width:32px;height:32px;border-radius:10px;flex:0 0 32px;
+  background:linear-gradient(135deg,var(--red) 0%,#FF5C4D 100%);
+  display:grid;place-items:center;color:#fff;box-shadow:0 4px 10px rgba(255,36,66,.28);
+}
+.brand-mark svg{width:19px;height:19px}
+.brand-txt strong{display:block;font-size:14px;font-weight:600;letter-spacing:.2px}
+.brand-txt span{display:block;font-size:11px;color:var(--t3);margin-top:1px}
+
+.nav-label{font-size:11px;color:var(--t4);padding:14px 10px 6px;font-weight:600;letter-spacing:.6px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-m);
+  color:var(--t2);font-size:13.5px;font-weight:500;transition:.16s;position:relative;
+}
+.nav-item svg{width:18px;height:18px;flex:0 0 18px;opacity:.82}
+.nav-item:hover{background:#F7F7F9;color:var(--t1)}
+.nav-item.on{background:var(--red-50);color:var(--red-600);font-weight:600}
+.nav-item.on svg{opacity:1}
+.nav-item.on::before{
+  content:"";position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--red);
+}
+.nav-badge{
+  margin-left:auto;font-size:10.5px;font-weight:600;background:var(--red);color:#fff;
+  min-width:18px;height:18px;border-radius:99px;display:grid;place-items:center;padding:0 5px;
+}
+.sidebar-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}
+.about-btn{
+  width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r-m);
+  color:var(--t3);font-size:12.5px;transition:.16s;
+}
+.about-btn svg{width:16px;height:16px}
+.about-btn:hover{background:#F7F7F9;color:var(--t1)}
+
+.main{flex:1;margin-left:var(--sw);min-width:0;display:flex;flex-direction:column}
+
+.topbar{
+  position:sticky;top:0;z-index:30;background:rgba(246,246,248,.86);backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line);
+  padding:0 28px;height:58px;display:flex;align-items:center;gap:14px;
+}
+.topbar h1{margin:0;font-size:16px;font-weight:600;letter-spacing:.2px}
+.topbar .sub{font-size:12px;color:var(--t3);margin-left:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+.switcher{
+  display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line2);
+  border-radius:99px;padding:5px 12px 5px 6px;font-size:13px;font-weight:500;transition:.16s;
+}
+.switcher:hover{border-color:var(--t4)}
+.switcher .dot{width:22px;height:22px;border-radius:99px;background:var(--red-50);color:var(--red-600);display:grid;place-items:center;font-size:10px;font-weight:700}
+.switcher svg{width:14px;height:14px;color:var(--t3)}
+.icon-btn{
+  width:34px;height:34px;border-radius:99px;display:grid;place-items:center;color:var(--t2);
+  border:1px solid transparent;transition:.16s;position:relative;
+}
+.icon-btn:hover{background:#EFEFF2}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn .pip{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:99px;background:var(--red);border:2px solid var(--bg)}
+
+.view{padding:22px 28px 104px;max-width:1360px;width:100%}
+
+/* ---------- primitives ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh)}
+.card-h{display:flex;align-items:center;gap:10px;padding:16px 18px 0}
+.card-h h3{margin:0;font-size:14.5px;font-weight:600}
+.card-h .desc{font-size:12px;color:var(--t3);margin-left:auto}
+.card-b{padding:16px 18px 18px}
+.sec-title{display:flex;align-items:center;gap:8px;margin:26px 2px 12px;font-size:14px;font-weight:600;color:var(--t1)}
+.sec-title .hint{font-size:12px;color:var(--t3);font-weight:400}
+.sec-title svg{width:16px;height:16px;color:var(--t3)}
+
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill.red{background:var(--red-50);color:var(--red-600)}
+.pill.green{background:var(--green-50);color:var(--green)}
+.pill.orange{background:var(--orange-50);color:#D97A00}
+.pill.blue{background:var(--blue-50);color:var(--blue)}
+.pill.purple{background:var(--purple-50);color:var(--purple)}
+.pill.gray{background:#F2F2F5;color:var(--t2)}
+
+.delta{font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:2px}
+.delta.up{color:var(--green)} .delta.down{color:var(--red)} .delta.flat{color:var(--t3)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{padding:16px 18px 14px;position:relative;overflow:hidden}
+.kpi .lab{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--t2);font-weight:500}
+.kpi .lab svg{width:15px;height:15px;color:var(--t3)}
+.kpi .val{font-size:27px;font-weight:700;letter-spacing:-.5px;margin:9px 0 5px;font-variant-numeric:tabular-nums}
+.kpi .val .unit{font-size:14px;font-weight:600;color:var(--t2);margin-left:3px;letter-spacing:0}
+.kpi .foot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--t3)}
+.kpi .spark{position:absolute;right:0;bottom:0;width:104px;height:44px;opacity:.5}
+
+/* journey chain */
+.journey{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:4px 2px 8px}
+/* 每一步的内容居中,是为了让箭头真的落在两个图标之间:
+   内容左对齐时图标贴在自己那一列的左缘,而箭头居中在连接列里,
+   两者差半列宽,看着就是「箭头偏右、离右边那个图标更近」。
+   居中之后图标中心 = 列中心,连接件自然就是两个图标的正中间。 */
+.jstep{flex:1 1 0;min-width:132px;display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:0 4px}
+.jstep .ico{
+  width:40px;height:40px;border-radius:13px;display:grid;place-items:center;margin-bottom:10px;
+  background:#F4F4F7;color:var(--t2);transition:.2s;
+}
+.jstep .ico svg{width:20px;height:20px}
+.jstep.hot .ico{background:var(--red-50);color:var(--red)}
+.jstep .name{font-size:12.5px;color:var(--t2);font-weight:500;margin-bottom:3px}
+.jstep .num{font-size:20px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.jstep .note{font-size:11px;color:var(--t3);margin-top:3px}
+.jlink{
+  flex:0 0 76px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:5px;color:var(--t3);
+}
+/* 箭头行固定 40px = 图标块高度,所以每一处连接件都落在和图标同一个水平线上;
+   转化率只作为它下面的读数,不再参与定位。 */
+.jlink .arrow{
+  width:100%;height:40px;display:flex;align-items:center;justify-content:center;
+  color:var(--t3);
+}
+.jlink .arrow svg{width:26px;height:26px;display:block;stroke-width:2}
+.jlink .rate{
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.35;
+}
+.jlink .drop{font-size:10.5px;color:var(--t3);white-space:nowrap;line-height:1.35}
+
+/* alert list */
+.alerts{display:flex;flex-direction:column}
+.alert{
+  display:flex;align-items:center;gap:12px;padding:12px 8px;border-radius:var(--r-m);
+  border-bottom:1px solid var(--line);cursor:pointer;transition:.14s;
+}
+.alert:last-child{border-bottom:0}
+.alert:hover{background:#FAFAFC}
+.alert .sev{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:0 0 26px}
+.alert .sev svg{width:15px;height:15px}
+.sev.high{background:var(--red-50);color:var(--red)}
+.sev.mid{background:var(--orange-50);color:#D97A00}
+.sev.low{background:#F2F2F5;color:var(--t2)}
+.alert .who{font-size:13.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+.alert .what{font-size:12.5px;color:var(--t2);min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alert .meta{margin-left:auto;display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.alert .time{font-size:11.5px;color:var(--t3)}
+
+/* three-way value */
+.triple{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tcard{padding:15px 16px;border-radius:var(--r-l);border:1px solid var(--line);background:var(--card)}
+.tcard .hd{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--t2)}
+.tcard .hd .chip{width:22px;height:22px;border-radius:7px;display:grid;place-items:center}
+.tcard .hd .chip svg{width:13px;height:13px}
+.tcard .big{font-size:21px;font-weight:700;margin:10px 0 4px;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.tcard .fine{font-size:11.5px;color:var(--t3)}
+.tcard a{display:block}
+.link-a{color:var(--blue);font-weight:600}
+.hr{height:1px;background:var(--line);margin:16px 0}
+
+.two-col{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
+.kpis>*,.two-col>*,.triple>*{min-width:0}
+
+/* placeholder */
+.ph{display:grid;place-items:center;padding:64px 24px;text-align:center}
+.ph .ic{width:56px;height:56px;border-radius:18px;background:var(--red-50);color:var(--red);display:grid;place-items:center;margin-bottom:16px}
+.ph .ic svg{width:26px;height:26px}
+.ph h2{margin:0 0 6px;font-size:16px;font-weight:600}
+.ph p{margin:0;color:var(--t3);font-size:13px;max-width:460px}
+.ph .todo{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:620px}
+.ph .todo span{font-size:12px;color:var(--t2);background:var(--card);border:1px solid var(--line2);border-radius:99px;padding:5px 12px}
+
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(20,20,28,.42);backdrop-filter:blur(3px);z-index:80;display:grid;place-items:center;padding:24px;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card);border-radius:var(--r-xl);max-width:720px;width:100%;max-height:84vh;overflow:auto;box-shadow:0 24px 60px rgba(20,20,40,.24);animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.modal-h{display:flex;align-items:center;gap:10px;padding:20px 22px 14px;position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line)}
+.modal-h h3{margin:0;font-size:15px;font-weight:600}
+.modal-h .x{margin-left:auto;width:30px;height:30px;border-radius:99px;display:grid;place-items:center;color:var(--t2)}
+.modal-h .x:hover{background:#F2F2F5}
+.modal-b{padding:18px 22px 24px}
+
+.matrix{display:flex;flex-direction:column;gap:8px}
+.mrow{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:#FCFCFD}
+.mrow.me{border-color:var(--red-100);background:var(--red-50)}
+.mrow .stage{font-size:12px;color:var(--t3);flex:0 0 88px}
+.mrow .prod{font-size:13px;font-weight:600}
+.mrow.me .prod{color:var(--red-700)}
+.mrow .tag{margin-left:auto;font-size:11px;color:var(--t3)}
+.mrow.me .tag{color:var(--red-600);font-weight:600}
+
+/* ---------- tabs / 商家列表 ---------- */
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:6px 13px;border-radius:99px;font-size:12.5px;font-weight:500;color:var(--t2);
+  background:var(--card);border:1px solid var(--line2);transition:.15s}
+.tab:hover{border-color:var(--t4)}
+.tab.on{background:var(--t1);color:#fff;border-color:var(--t1)}
+.tab .n{opacity:.6;margin-left:5px;font-size:11.5px;font-variant-numeric:tabular-nums}
+
+/* 健康度筛选芯片。它和生命周期分层是**两个正交的维度**,所以不做成又一个 tab,
+   而是推到这一行的右端、用不同形态区分开:tab 选「生命周期哪一段」,芯片选「健康度线以下」。 */
+.riskchip{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:6px 13px;
+  border-radius:99px;font-size:12.5px;font-weight:500;color:var(--t2);background:var(--card);
+  border:1px solid var(--line2);cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+.riskchip:hover{border-color:var(--t4)}
+.riskchip.on{background:var(--red-50);color:var(--red-600);border-color:var(--red-100);font-weight:600}
+/* 计数为 0 时只变淡,不移除 —— 控件位置稳定,才敢放心做「没有就是结论」的空态 */
+.riskchip.zero{opacity:.5}
+.riskchip.zero:hover{opacity:.8}
+.riskchip .n{opacity:.7;margin-left:2px;font-size:11.5px;font-variant-numeric:tabular-nums}
+
+.tierbar{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:4px 0 12px;background:#F0F0F3}
+.tierbar i{display:block;height:100%}
+/* 单层内部是同色阶的相邻档,浅档之间靠一道白缝区分 */
+.tierbar i + i{box-shadow:-1px 0 0 #fff}
+.tierleg{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--t2)}
+.tierleg b{font-variant-numeric:tabular-nums;color:var(--t1)}
+.tierleg .d{width:8px;height:8px;border-radius:3px;display:inline-block;margin-right:6px}
+.tierleg .seg{border-radius:6px;transition:.13s}
+.tierleg .seg.click{cursor:pointer}
+.tierleg .seg.click:hover{color:var(--red-600)}
+.tierleg .seg.click:hover b{color:var(--red-600)}
+
+/* ---- 分层口径 · 默认收起,点标题才展开 ----
+   页面常驻的应该是数据本身,规则放在一次点击之后,不跟看板抢注意力 */
+.tiernote{margin-top:14px;border-radius:var(--r-m);background:#FAFAFB;border:1px solid var(--line);
+  font-size:12px;line-height:1.7;color:var(--t2);overflow:hidden}
+.tn-head{display:flex;align-items:center;gap:7px;width:100%;padding:9px 14px;background:none;border:0;
+  cursor:pointer;font-family:inherit;font-size:12px;color:var(--t1);text-align:left;transition:.14s}
+.tn-head:hover{background:#F5F5F7}
+.tn-head > svg{flex:0 0 auto;color:var(--t3)}
+.tn-head .tn-title{font-weight:600}
+.tn-head .tn-hint{color:var(--t3);font-size:11.5px;font-weight:400}
+.tn-head .chev{margin-left:auto;display:inline-flex;color:var(--t3);transition:transform .18s}
+.tiernote.on .tn-head .chev{transform:rotate(180deg)}
+.tn-body{padding:10px 14px 12px;border-top:1px solid var(--line)}
+.tn-body .rl{display:flex;gap:8px;align-items:baseline}
+.tn-body .rl + .rl{margin-top:3px}
+.tn-body .st{flex:0 0 16px;height:16px;border-radius:5px;background:var(--red-50);color:var(--red-600);
+  font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;
+  position:relative;top:2px}
+.tn-body .rl b{color:var(--t1)}
+.tn-body .ft{margin-top:8px;padding-top:7px;border-top:1px dashed var(--line);color:var(--t3);font-size:11.5px}
+.pill-why{cursor:help}
+
+.tbl-wrap{overflow-x:auto;margin:0 -4px}
+.tbl{width:100%;border-collapse:collapse;min-width:660px}
+.tbl th{font-size:11.5px;font-weight:600;color:var(--t3);text-align:left;padding:9px 10px;
+  border-bottom:1px solid var(--line);white-space:nowrap;background:#FCFCFD}
+.tbl td{padding:11px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+.tbl tr.cursor{cursor:pointer;transition:.13s}
+.tbl tr.cursor:hover{background:#FAFAFC}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .mname{font-weight:600;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tbl .num{font-variant-numeric:tabular-nums;font-weight:600}
+.tbl .ghost{font-size:11.5px;color:var(--t3)}
+.btn-mini{font-size:12px;font-weight:600;color:var(--red-600);background:var(--red-50);
+  padding:5px 11px;border-radius:99px;transition:.15s;white-space:nowrap}
+.btn-mini:hover{background:var(--red-100)}
+.btn-ghost{font-size:12.5px;font-weight:500;color:var(--t2);background:var(--card);
+  border:1px solid var(--line2);padding:7px 14px;border-radius:99px;transition:.15s}
+.btn-ghost:hover{border-color:var(--t4);color:var(--t1)}
+.btn-solid{font-size:12.5px;font-weight:600;color:#fff;background:var(--red);
+  padding:8px 16px;border-radius:99px;transition:.15s;box-shadow:0 3px 10px rgba(255,36,66,.24)}
+.btn-solid:hover{background:var(--red-600)}
+
+.health{display:flex;align-items:center;gap:8px;min-width:108px}
+.health .bar{flex:1;height:6px;border-radius:99px;background:#F0F0F3;overflow:hidden}
+.health .bar i{display:block;height:100%;border-radius:99px}
+.health .v{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;min-width:22px;text-align:right}
+.health.why{cursor:help}
+
+/* ---------- 双入口 ---------- */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ecard{border:1px solid var(--line);border-radius:var(--r-m);padding:13px 15px;background:#FCFCFD;position:relative}
+.ecard.brk{border-color:var(--red-100);background:var(--red-50)}
+.ecard .t{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin-bottom:10px}
+.ecard .t .chip{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;flex:0 0 22px}
+.ecard .t .chip svg{width:13px;height:13px}
+.ecard .t .badge{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--red);
+  background:var(--card);border-radius:99px;padding:2px 8px}
+/* 入口名带一个 ⓘ:悬停说明这个入口是怎么触达用户的 —— 两个入口的 CTR 差好几倍,
+   不解释清楚「主动意图 vs 被动推荐」,读者会以为数字填错了 */
+.ecard .t .ent-nm{display:inline-flex;align-items:center;gap:4px;cursor:help}
+.ecard .t .ent-nm .ent-info{display:inline-flex;color:var(--t4);transition:color .15s}
+.ecard .t .ent-nm:hover .ent-info{color:var(--blue)}
+/* 标签与数值挨着排,标签定宽 → 三行的值左端对齐成一列。
+   原先用 space-between 把值推到卡片右边缘,和标签隔着大半张卡,读的时候配不成对 */
+.ecard .row{display:flex;align-items:baseline;gap:9px;padding:3.5px 0;font-size:12.5px}
+.ecard .row .k{flex:0 0 30px;color:var(--t3);font-size:11.5px;font-weight:600}
+.ecard .row b{font-variant-numeric:tabular-nums;color:var(--t1);font-size:13.5px;font-weight:600}
+
+.merge{display:flex;align-items:center;gap:10px;justify-content:center;padding:12px 0 2px;
+  font-size:12px;color:var(--t3)}
+.merge .line{height:1px;background:var(--line2);flex:1}
+
+.jstep .flag{margin-top:6px;font-size:10.5px;font-weight:700;color:var(--red);
+  background:var(--red-50);border-radius:99px;padding:2px 8px;display:inline-block}
+.jstep.bad .ico{background:var(--red-50);color:var(--red);box-shadow:0 0 0 3px rgba(255,36,66,.10)}
+
+.callout{display:flex;gap:10px;padding:13px 15px;border-radius:var(--r-m);font-size:12.5px;line-height:1.7}
+.callout.warn{background:var(--red-50);color:var(--red-700)}
+.callout.ok{background:var(--green-50);color:#06794F}
+.callout.neutral{background:#F5F5F7;color:var(--t2)}
+.callout b{font-weight:700}
+.callout svg{flex:0 0 auto;margin-top:1px}
+
+/* ---------- CPA 拆解 ---------- */
+.cpa-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.slider{padding:9px 0}
+.slider .top{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);margin-bottom:8px}
+.slider .top .nm{font-weight:600;color:var(--t1)}
+.slider .top b{margin-left:auto;font-size:16px;font-variant-numeric:tabular-nums;color:var(--t1)}
+.slider .top .range{font-size:11px;color:var(--t3)}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;
+  background:#EDEDF0;outline:0;display:block;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:99px;
+  background:var(--red);border:3px solid #fff;box-shadow:0 1px 5px rgba(255,36,66,.45);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:99px;background:var(--red);
+  border:3px solid #fff;cursor:pointer}
+
+.formula{background:#FBFBFC;border:1px solid var(--line);border-radius:var(--r-m);padding:13px 15px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--t2);
+  line-height:2;overflow-x:auto;white-space:nowrap}
+.formula em{font-style:normal;color:var(--red-600);font-weight:700}
+
+.cpanum{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px}
+.cpanum .big{font-size:34px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;color:var(--red)}
+.cpanum .unit{font-size:14px;font-weight:600;color:var(--t2)}
+.cpanum .vs{margin-left:auto;font-size:12px;color:var(--t3);text-align:right;line-height:1.6}
+
+.wf{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.wf .wrow{display:grid;grid-template-columns:58px 1fr 74px;align-items:center;gap:11px;padding:7px 0;
+  font-size:12.5px;border-bottom:1px dashed var(--line)}
+.wf .wrow:last-child{border-bottom:0}
+.wf .wrow.head{color:var(--t3);font-size:11.5px;font-weight:600;border-bottom:1px solid var(--line)}
+.wf .wlab{color:var(--t2);font-weight:600}
+.wf .wbar{height:9px;border-radius:99px;background:#F2F2F5;position:relative;overflow:hidden}
+.wf .wbar i{position:absolute;top:0;bottom:0;border-radius:99px;transition:.25s}
+.wf .wbar i.p{background:var(--red);left:0}
+.wf .wbar i.n{background:var(--green);left:0}
+.wf .wval{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.wf .wval.p{color:var(--red-600)}
+.wf .wval.n{color:var(--green)}
+
+/* ---------- 打法卡 ---------- */
+.kpirow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mini-kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);padding:14px 16px}
+.mini-kpi .l{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.mini-kpi .l svg{width:14px;height:14px;color:var(--t3)}
+.mini-kpi .v{font-size:23px;font-weight:700;margin-top:7px;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.mini-kpi .v small{font-size:13px;font-weight:600;color:var(--t2);margin-left:2px}
+.mini-kpi .f{font-size:11.5px;color:var(--t3);margin-top:4px}
+
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.kcard{border:1px solid var(--line);border-radius:var(--r-l);padding:16px 18px;background:var(--card);
+  box-shadow:var(--sh);transition:.16s;display:flex;flex-direction:column}
+.kcard:hover{box-shadow:var(--sh-hover)}
+.kcard .kh{display:flex;align-items:flex-start;gap:10px}
+.kcard .kh h4{margin:0;font-size:14px;font-weight:600;line-height:1.45}
+.kcard .kfields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.kfield{background:#FAFAFC;border-radius:var(--r-m);padding:10px 12px}
+.kfield .lab{font-size:10.5px;color:var(--t3);font-weight:700;margin-bottom:4px;letter-spacing:.4px}
+.kfield .txt{font-size:12.5px;color:var(--t2);line-height:1.62}
+.kcard .kf{display:flex;align-items:center;gap:11px;margin-top:13px;padding-top:12px;
+  border-top:1px solid var(--line);font-size:11.5px;color:var(--t3);flex-wrap:wrap}
+.kcard .kf .refs{margin-left:auto;font-weight:700;color:var(--red-600)}
+.kcard.sm .kfields{grid-template-columns:1fr}
+/* 刚沉淀的卡给一圈高亮,和「已沉淀」回执呼应 */
+.kcard.fresh{border-color:var(--red);box-shadow:0 0 0 3px var(--red-50),var(--sh-hover)}
+
+/* ---- 打法卡沉淀 ---- */
+.forge-cta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px;
+  padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-l);background:#FAFAFC}
+.forge-cta .tx{display:flex;gap:11px;flex:1;min-width:220px;color:var(--red-600)}
+.forge-cta .tx span{display:block}
+.forge-cta .tx b{display:block;font-size:13px;color:var(--t1);margin-bottom:3px}
+.forge-cta .tx em{font-style:normal;font-size:12.5px;color:var(--t3);line-height:1.68}
+
+.forge-done{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;
+  padding:13px 16px;border:1px solid var(--red-100);background:var(--red-50);
+  border-radius:var(--r-l);animation:pop .2s ease}
+.forge-done .ic{display:grid;place-items:center;width:26px;height:26px;border-radius:99px;
+  background:var(--red);color:#fff;flex:0 0 auto}
+.forge-done .tx{flex:1;min-width:200px}
+.forge-done .tx b{display:block;font-size:13px;color:var(--red-700);margin-bottom:3px}
+.forge-done .tx span{font-size:12px;color:var(--t2);line-height:1.6}
+.forge-done .x{width:24px;height:24px;border-radius:99px;color:var(--t3);display:grid;place-items:center}
+.forge-done .x:hover{background:#fff}
+.btn-ghost.danger{color:var(--red-600);border-color:var(--red-100)}
+.btn-ghost.danger:hover{background:var(--red-50);border-color:var(--red);color:var(--red-700)}
+.btn-ghost.danger.armed{background:var(--red);border-color:var(--red);color:#fff}
+
+.fgmodal{max-width:680px}
+.fg-src{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--t2);
+  background:#F7F7FA;border-radius:var(--r-m);padding:9px 12px;margin-bottom:16px}
+.fg-src b{color:var(--t1)}
+.fg-lb{font-size:12.5px;font-weight:600;color:var(--t1);margin:15px 0 7px;
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.fg-lb .hint{font-size:11.5px;font-weight:400;color:var(--t3)}
+.fg-lb.need{color:var(--red-700)}
+.fg-lb.need .hint{color:var(--red-600)}
+.fg-name{padding:11px 14px;border:1px dashed var(--red-100);border-radius:var(--r-m);
+  background:var(--red-50);font-size:13.5px;color:var(--red-700);line-height:1.5;word-break:break-all}
+.fg-name i{font-style:normal;color:var(--t3);margin:0 4px}
+.fg-compose{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.fg-sel{flex:1;min-width:210px;display:flex;align-items:center;gap:9px;
+  border:1px solid var(--line2);border-radius:var(--r-m);padding:7px 11px;background:var(--card)}
+.fg-sel span{font-size:11.5px;color:var(--t3);font-weight:600;flex:0 0 auto}
+.fg-sel select{flex:1;border:0;background:transparent;font-family:inherit;font-size:12.5px;
+  color:var(--t1);outline:none;cursor:pointer;min-width:0}
+.fgmodal textarea{width:100%;box-sizing:border-box;border:1px solid var(--line2);border-radius:var(--r-m);
+  padding:10px 12px;font-family:inherit;font-size:12.5px;line-height:1.7;color:var(--t1);
+  resize:vertical;outline:none;background:var(--card);transition:.14s}
+.fgmodal textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-50)}
+.fgmodal textarea::placeholder{color:var(--t4)}
+.fg-note{display:flex;gap:9px;margin-top:9px;font-size:11.5px;color:var(--t3);line-height:1.68}
+.fg-note svg{flex:0 0 auto;margin-top:1px}
+.fg-tags{display:flex;gap:7px;flex-wrap:wrap}
+.fg-tag{font-size:11.5px;padding:4px 10px;border-radius:99px;background:#F2F2F5;color:var(--t2)}
+.fg-err{display:none;align-items:flex-start;gap:8px;margin-top:14px;padding:10px 12px;
+  border-radius:var(--r-m);background:#FFF1F3;border:1px solid var(--red-100);
+  color:var(--red-700);font-size:12.5px;line-height:1.6}
+.fg-err svg{flex:0 0 auto;margin-top:2px}
+.fg-foot{display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:16px;
+  border-top:1px solid var(--line);flex-wrap:wrap}
+.fg-auto{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--green);
+  margin-right:auto;min-width:180px}
+.fg-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fg-pair .fg-sel{min-width:0}
+/* 独占一行的下拉(负责人):和 .fg-pair 里的两列共用同一套 .fg-sel 观感 */
+.fg-sel-full{display:flex;width:100%;max-width:none}
+.fg-days{display:flex;gap:8px;flex-wrap:wrap}
+.daybtn{font-size:12.5px;font-weight:600;padding:8px 16px;border-radius:var(--r-m);
+  border:1px solid var(--line);background:#fff;color:var(--t2);cursor:pointer;font-family:inherit}
+.daybtn:hover{border-color:var(--red-100);color:var(--red-700)}
+.daybtn.on{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ---- 产品需求 · 第二种沉淀物 ----
+   打法卡是红的(行动 / 商家侧),产品需求是蓝的(信息 / 平台侧)。
+   同一个断点走哪条出口,颜色上就该一眼分得开 */
+.needstrip{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:11px 14px;
+  border:1px solid #CFDCFF;background:var(--blue-50);border-radius:var(--r-m);
+  font-size:12.5px;color:var(--t2);line-height:1.66}
+.needstrip + .needstrip{margin-top:8px}
+.needstrip > svg{flex:0 0 auto;margin-top:1px;color:var(--blue)}
+.needstrip b{color:var(--t1)}
+.needstrip .lb{color:var(--blue);font-weight:700}
+.needstrip .go{margin-left:auto;flex:0 0 auto;color:var(--blue);font-weight:600;cursor:pointer;white-space:nowrap}
+.needstrip .go:hover{text-decoration:underline}
+/* 「已登记为产品需求」的回执:和打法卡的回执同款,只换色 */
+.forge-done.need{border-color:#CFDCFF;background:var(--blue-50)}
+.forge-done.need .ic{background:var(--blue)}
+.forge-done.need .tx b{color:#2A55CC}
+/* 登记弹窗里的「诊断依据」:这几行是页面算出来的,是提不提这条需求的判据 */
+.needev{background:#F7F7FA;border-radius:var(--r-m);padding:4px 12px}
+.needev .ev{display:flex;gap:10px;align-items:baseline;padding:8px 0;font-size:12.5px;line-height:1.6}
+.needev .ev + .ev{border-top:1px dashed var(--line)}
+.needev .ev > span{flex:0 0 62px;color:var(--t3);font-weight:600;font-size:11.5px}
+.needev .ev > b{color:var(--t1);font-weight:600}
+.needev .ev.hit > b{color:var(--red-600)}
+/* 证据够强时给按钮一圈提示:机器也认为这条断点该走平台侧,不是运营在硬凑 */
+.btn-ghost.sug{border-color:var(--blue);color:var(--blue);background:var(--blue-50)}
+.btn-ghost.sug:hover{border-color:var(--blue);color:#2A55CC;background:#E2EAFF}
+
+/* ---- 投放可持续性 · LTV ÷ CPA。链路末端唯一一个能判「该不该继续加钱」的读数 ---- */
+.econ{margin-top:14px;border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden}
+.econ.ok{border-color:#CFEBDA;background:#F7FCF9}
+.econ.tight{border-color:#FFE0C2;background:#FFFBF6}
+.ec-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.ec-h .k{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--t1)}
+.ec-h .pill{margin-left:auto}
+.ec-b{display:flex;align-items:center;gap:16px;padding:14px 15px}
+.ec-fig{display:flex;flex-direction:column;flex:0 0 auto;padding-right:16px;
+  border-right:1px solid var(--line);min-width:104px}
+.ec-fig .n{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--t1);line-height:1.1}
+.econ.ok .ec-fig .n{color:var(--green)}
+.econ.tight .ec-fig .n{color:var(--red-600)}
+.ec-fig .n small{font-size:14px;font-weight:700;margin-left:1px}
+.ec-fig .u{font-size:11px;color:var(--t3);margin-top:3px}
+.ec-eq{font-size:12.5px;color:var(--t2);line-height:1.7}
+.ec-eq em{display:block;font-style:normal;font-size:11.5px;color:var(--t3);margin-top:2px}
+.ec-v{display:flex;gap:9px;padding:12px 15px;border-top:1px solid var(--line);
+  font-size:12.5px;line-height:1.7;color:var(--t2);background:rgba(255,255,255,.55)}
+.ec-v svg{flex:0 0 auto;margin-top:2px;color:var(--t3)}
+.ec-v b{color:var(--t1);margin-right:6px}
+
+/* ---- 处置状态条 · 诊断之后那一步的容器,登记过就常驻在链路卡顶部 ---- */
+.actbar{margin-top:14px;padding:13px 15px;border:1px solid #D5E0FF;background:#F5F8FF;
+  border-radius:var(--r-l)}
+.actbar.due{border-color:#FFE0C2;background:#FFFBF6}
+.ab-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.ab-id{font-size:11.5px;font-weight:700;color:var(--t2)}
+.ab-owner{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
+  color:var(--t2);background:#fff;border:1px solid #D5E0FF;border-radius:99px;padding:2px 9px}
+.ab-owner svg{flex:0 0 auto;color:var(--t3)}
+.ab-due{font-size:11.5px;color:var(--t3);margin-left:auto}
+.ab-b{font-size:12.5px;line-height:1.75}
+.ab-do{color:var(--t1);font-weight:600;margin-bottom:6px}
+.ab-m{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--t2)}
+.ab-m span{font-size:11.5px;color:var(--t3)}
+.ab-m b{font-weight:700;color:var(--t2);background:#fff;border:1px solid var(--line);
+  border-radius:6px;padding:1px 7px}
+.ab-m b.tgt{color:var(--blue);border-color:#D5E0FF}
+.ab-m i{font-style:normal;color:var(--t3)}
+.ab-g{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3);margin-top:7px}
+.ab-g svg{flex:0 0 auto}
+.actbar .btn-solid{margin-top:12px}
+
+/* ---- 助手上下文 · 回答之前先说清「我看了哪些读数」 ---- */
+.ctxbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.ctxchip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+  padding:4px 10px;border-radius:99px;border:1px solid #CFEBDA;background:#F7FCF9;
+  color:var(--green);cursor:pointer;font-family:inherit}
+.ctxchip.off{border-color:#FFE0C2;background:#FFFBF6;color:#D97A00}
+.ctxhint{font-size:11.5px;color:var(--t3)}
+.ctxblk{margin-bottom:11px;padding:11px 13px;border-radius:var(--r-m);
+  background:#F7F7FA;border:1px solid var(--line)}
+.ctxblk .tag{display:inline-flex;align-items:center;gap:5px;margin:0 0 6px;font-size:11px;
+  font-weight:700;color:var(--t3);letter-spacing:.2px}
+.ctxblk .bd{font-size:12.5px;line-height:1.8;color:var(--t2)}
+.ctxblk .bd b{color:var(--t1)}
+
+/* ---- 知识库卡片 · 命中同类断点的商家名单 ---- */
+.khits{margin-top:12px}
+.hits-btn{display:flex;align-items:center;gap:7px;width:100%;padding:9px 11px;text-align:left;
+  border:1px solid var(--line);border-radius:var(--r-m);background:#FAFAFB;
+  font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit}
+.hits-btn:hover{border-color:var(--red-100);color:var(--red-700);background:var(--red-50)}
+.hits-btn.on{border-color:var(--red-100);background:var(--red-50);color:var(--red-700);
+  border-bottom-left-radius:0;border-bottom-right-radius:0}
+.hits-btn b{color:var(--red-600)}
+.hits-btn .chev{margin-left:auto;display:flex;transition:transform .18s}
+.hits-btn.on .chev{transform:rotate(180deg)}
+.hits-list{display:flex;flex-wrap:wrap;gap:6px;padding:11px;background:var(--red-50);
+  border:1px solid var(--red-100);border-top:0;border-radius:0 0 var(--r-m) var(--r-m)}
+.hchip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:#fff;
+  border:1px solid var(--red-100);color:var(--red-700);cursor:pointer;white-space:nowrap}
+.hchip:hover{background:var(--red);border-color:var(--red);color:#fff}
+.hits-note{width:100%;font-size:11.5px;font-weight:400;color:var(--t3);margin-top:2px}
+
+/* ---- 大盘建议可点 / 诊断页层内位次可点 ---- */
+.advice{display:flex;gap:9px;margin-bottom:12px;padding:9px 11px;border-radius:var(--r-m);
+  border:1px solid transparent;cursor:pointer;transition:background .15s,border-color .15s}
+.advice:last-child{margin-bottom:0}
+.advice:hover{background:#FAFAFB;border-color:var(--line)}
+.advice svg{flex:0 0 auto;margin-top:2px}
+.advice .go{display:inline-flex;align-items:center;gap:3px;margin-left:8px;font-size:12px;
+  font-weight:600;color:var(--red-600);white-space:nowrap}
+.advice:hover .go{color:var(--red-700)}
+.lnk{color:var(--red-600);font-weight:600;cursor:pointer;
+  border-bottom:1px dashed var(--red-100)}
+.lnk:hover{color:var(--red-700);border-bottom-color:var(--red)}
+
+/* ---- 口径说明 · 分母不同就不能相除,写清楚比让人猜好 ---- */
+.scopenote{display:flex;gap:10px;margin-top:14px;padding:14px 16px;border-radius:var(--r-l);
+  background:#FAFAFB;border:1px solid var(--line);font-size:12.5px;line-height:1.8;color:var(--t2)}
+.scopenote svg{flex:0 0 auto;margin-top:3px;color:var(--t3)}
+.scopenote b{color:var(--t1)}
+.scopenote .mt{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+@media (max-width:560px){
+  .fg-sel{min-width:100%}
+  .fg-foot .btn-ghost,.fg-foot .btn-solid{flex:1}
+  .fg-auto{min-width:100%;margin-bottom:2px}
+  .kcard .kfields{grid-template-columns:1fr}
+  .fg-pair{grid-template-columns:1fr}
+  .daybtn{flex:1}
+  /* 比值数字单独占一行,等式和判断跟在后面,避免窄屏把数字挤成两行 */
+  .ec-b{flex-direction:column;align-items:stretch;gap:12px}
+  .ec-fig{flex-direction:row;align-items:baseline;gap:8px;padding:0 0 12px;
+    border-right:0;border-bottom:1px solid var(--line);min-width:0}
+  .ec-fig .u{margin-top:0}
+  .ab-due{margin-left:0}
+  .actbar .btn-solid{width:100%}
+}
+
+.rank{display:flex;flex-direction:column;gap:2px}
+.rankrow{display:flex;align-items:center;gap:12px;padding:11px 6px;border-bottom:1px solid var(--line)}
+.rankrow:last-child{border-bottom:0}
+.rankrow .no{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:11.5px;
+  font-weight:700;background:#F2F2F5;color:var(--t2);flex:0 0 22px}
+.rankrow .no.top{background:var(--red);color:#fff}
+.rankrow .nm{font-size:13px;font-weight:600}
+.rankrow .cnt{margin-left:auto;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.rankrow .sub{font-size:11.5px;color:var(--t3)}
+
+/* ---------- AI 助手 ---------- */
+.chat{display:flex;flex-direction:column;gap:13px;padding:4px 2px;min-height:190px;max-height:520px;overflow-y:auto}
+.msg{display:flex;gap:10px;max-width:92%}
+.msg .av{width:28px;height:28px;border-radius:99px;flex:0 0 28px;display:grid;place-items:center}
+.msg .av svg{width:15px;height:15px}
+.msg .bub{background:#F5F5F7;border-radius:14px;padding:11px 14px;font-size:13px;line-height:1.75;
+  color:var(--t1);word-break:break-word}
+.msg .bub .cite{display:block;margin-top:9px;padding-top:8px;border-top:1px dashed var(--line2);
+  font-size:12px;color:var(--t2)}
+.msg .bub .cite b{color:var(--red-600)}
+.msg.me{margin-left:auto;flex-direction:row-reverse}
+.msg.me .bub{background:var(--red);color:#fff;border-radius:14px}
+.msg.ai .av{background:linear-gradient(135deg,var(--red),#FF5C4D);color:#fff;flex-direction:column}
+
+.composer{display:flex;gap:9px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.composer input{flex:1;border:1px solid var(--line2);border-radius:99px;padding:10px 16px;font-size:13px;
+  outline:0;background:#FAFAFC;transition:.15s;font-family:inherit}
+.composer input:focus{border-color:var(--red);background:var(--card)}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip-q{font-size:12px;color:var(--t2);background:var(--card);border:1px solid var(--line2);
+  border-radius:99px;padding:6px 13px;transition:.15s;text-align:left}
+.chip-q:hover{border-color:var(--red);color:var(--red-600);background:var(--red-50)}
+
+.hit{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:var(--r-m);
+  border:1px solid var(--line);margin-bottom:8px;font-size:12.5px;transition:.15s;cursor:pointer}
+.hit:hover{background:#FAFAFC;border-color:var(--line2)}
+.hit .sc{font-size:11px;font-weight:700;color:var(--red-600);background:var(--red-50);
+  padding:3px 8px;border-radius:99px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.hit .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hit .src{margin-left:auto;font-size:11px;color:var(--t3);flex:0 0 auto}
+.hit.low{opacity:.6}
+
+.quick{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}
+
+/* ---------- 商家搜索 ---------- */
+.msearch{position:relative;width:216px}
+.msearch .ms-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);display:flex;pointer-events:none}
+.msearch .ms-ico svg{width:15px;height:15px}
+.msearch input{width:100%;border:1px solid var(--line2);background:var(--card);border-radius:99px;
+  padding:7px 14px 7px 33px;font-size:13px;outline:0;transition:.15s;font-family:inherit;color:var(--t1)}
+.msearch input::placeholder{color:var(--t4)}
+.msearch input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,36,66,.08)}
+.ms-drop{position:absolute;top:calc(100% + 6px);right:0;width:308px;background:var(--card);
+  border:1px solid var(--line2);border-radius:var(--r-m);box-shadow:0 12px 32px rgba(22,22,32,.14);
+  padding:5px;display:none;max-height:344px;overflow-y:auto;z-index:60}
+.ms-drop.on{display:block}
+.ms-hd{font-size:11px;color:var(--t4);padding:7px 11px 4px;font-weight:600}
+.ms-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;transition:.13s}
+.ms-item:hover{background:#F7F7F9}
+.ms-item.on{background:var(--red-50)}
+.ms-name{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-name b{color:var(--red-600);font-weight:700}
+.ms-spend{font-size:11.5px;color:var(--t3);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.ms-empty{padding:16px;text-align:center;font-size:12.5px;color:var(--t3)}
+
+/* ---------- 悬浮助手 + 右侧抽屉 ---------- */
+.fab{position:fixed;right:26px;bottom:26px;z-index:70;width:52px;height:52px;border-radius:99px;
+  background:linear-gradient(135deg,var(--red),#FF5C4D);color:#fff;display:grid;place-items:center;
+  box-shadow:0 6px 20px rgba(255,36,66,.36),0 0 0 3px #fff;transition:.18s}
+.fab:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,36,66,.44)}
+.fab svg{width:22px;height:22px}
+.fab .fab-tip{position:absolute;right:62px;top:50%;transform:translateY(-50%);white-space:nowrap;
+  background:var(--t1);color:#fff;font-size:12px;padding:6px 11px;border-radius:8px;
+  opacity:0;pointer-events:none;transition:.16s}
+.fab:hover .fab-tip{opacity:1}
+
+.dw-mask{position:fixed;inset:0;background:rgba(20,20,28,.26);z-index:88;
+  opacity:0;pointer-events:none;transition:.22s}
+.dw-mask.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:430px;max-width:100vw;background:var(--card);z-index:90;
+  border-left:1px solid var(--line);display:flex;flex-direction:column;
+  transform:translateX(101%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+  box-shadow:-12px 0 40px rgba(22,22,32,.10)}
+.drawer.on{transform:none}
+.dw-h{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.dw-h .mk{width:30px;height:30px;border-radius:10px;flex:0 0 30px;color:#fff;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--red),#FF5C4D)}
+.dw-h .mk svg{width:16px;height:16px}
+.dw-h .ti{min-width:0}
+.dw-h .ti strong{display:block;font-size:13.5px;font-weight:600}
+.dw-h .ti span{display:block;font-size:11px;color:var(--t3);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dw-h .x{margin-left:auto;width:30px;height:30px;border-radius:99px;display:grid;place-items:center;
+  color:var(--t2);flex:0 0 30px}
+.dw-h .x:hover{background:#F2F2F5}
+.dw-body{flex:1;overflow-y:auto;padding:16px}
+/* 回答下方的「检索明细」展开按钮 —— 明细挂在它所属的那条回答上,而不是全局分页签 */
+.cite-btn{display:flex;align-items:center;gap:7px;width:100%;margin-top:12px;padding:7px 11px;
+  border:1px solid var(--line2);background:#FAFAFC;border-radius:9px;font-size:12px;
+  color:var(--t2);font-family:inherit;transition:.14s}
+.cite-btn:hover{background:#F4F4F7;border-color:var(--t3)}
+.cite-btn.on{background:var(--red-50);border-color:var(--red-100);color:var(--red-700)}
+.cite-btn .pct{color:var(--t3);font-size:11.5px;font-variant-numeric:tabular-nums}
+.cite-btn.on .pct{color:var(--red-600)}
+.cite-btn .cv{margin-left:auto;display:flex;color:var(--t3);transition:transform .18s}
+.cite-btn.on .cv{transform:rotate(180deg)}
+.hitbox{margin-top:10px;padding:12px;background:#FAFAFC;border:1px solid var(--line);border-radius:10px}
+.dw-foot{flex:0 0 auto;padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line)}
+.drawer .chat{max-height:none;min-height:0}
+.drawer .composer{margin-top:0;padding-top:0;border-top:0}
+
+/* responsive */
+.mobile-nav{display:none}
+@media (max-width:1020px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+  .triple{grid-template-columns:1fr}
+}
+@media (max-width:820px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .view{padding:16px 14px 92px}
+  .topbar{padding:0 14px;height:54px}
+  .topbar .sub{display:none}
+  .kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{padding:13px 14px}
+  .kpi .val{font-size:22px}
+  .kpi .spark{display:none}
+  .mobile-nav{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.94);
+    backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+  .mobile-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--t3);font-size:10.5px;font-weight:500;border-radius:12px}
+  .mobile-nav a svg{width:20px;height:20px}
+  .mobile-nav a.on{color:var(--red)}
+  /* 窄屏:让标题行的说明文字可换行,去掉告警行里最占位的次要信息 */
+  .sec-title{flex-wrap:wrap;line-height:1.6}
+  .sec-title .hint{font-size:11.5px;flex-basis:100%}
+  /* 窄屏:链路改为纵向,箭头旋转向下,转化率贴在两段之间 */
+  .journey{flex-direction:column;overflow:visible;padding:0}
+  .jstep{flex:0 0 auto;width:100%;flex-direction:row;align-items:center;gap:12px;padding:11px 2px;
+    text-align:left}
+  .jstep .ico{margin-bottom:0;width:36px;height:36px;flex:0 0 36px;border-radius:11px}
+  .jstep .name{margin-bottom:0;font-size:13px}
+  .jstep .num{margin-left:auto;font-size:18px}
+  .jstep .note{margin:0 0 0 8px;flex:0 0 auto;font-size:11px}
+  /* 纵向链路:箭头改成向下,左内距 8 + 箭头半宽 12 = 20,正好是 36px 图标块的中线 */
+  .jlink{flex:0 0 auto;width:100%;flex-direction:row;align-items:center;gap:8px;
+    padding:0 0 0 8px;justify-content:flex-start}
+  .jlink .arrow{width:24px;height:24px;flex:0 0 24px;align-items:center;justify-content:center}
+  .jlink .arrow svg{width:24px;height:24px;transform:rotate(90deg)}
+  .jlink .rate{font-size:11.5px}
+  .jlink .drop{font-size:11px}
+  .alert{gap:9px;padding:11px 4px}
+  .alert .time{display:none}
+  .alert .who{font-size:13px}
+  .alert .what{font-size:12px}
+  .kpi .val{font-size:21px}
+  /* 窄屏:隐藏次要列,表格仍可横向滚动 */
+  .hide-sm{display:none}
+  .tbl{min-width:500px}
+  .kpirow{grid-template-columns:1fr 1fr;gap:10px}
+  .duo{grid-template-columns:1fr}
+  .kgrid{grid-template-columns:1fr}
+  .cpa-grid{grid-template-columns:1fr;gap:14px}
+  .kcard .kfields{grid-template-columns:1fr}
+  .alert .who{font-size:12.5px}
+  .btn-ghost{font-size:12px;padding:6px 12px}
+  /* 窄屏:悬浮助手全宽,按钮抬到底部导航之上 */
+  .drawer{width:100%}
+  .fab{right:14px;bottom:calc(76px + env(safe-area-inset-bottom));width:48px;height:48px}
+  .fab .fab-tip{display:none}
+  .msearch{width:150px}
+  .msearch input{font-size:12.5px;padding:6px 12px 6px 31px}
+  .ms-drop{width:min(308px,calc(100vw - 28px))}
+  .drawer .chat{max-height:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" id="brandMark"></div>
+      <div class="brand-txt">
+        <strong>商家经营 CRM</strong>
+        <span>小红书商业化</span>
+      </div>
+    </div>
+    <div class="nav-label">工作台</div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <button class="about-btn" onclick="openMatrix()">
+        <span id="aboutIco"></span><span>本作品的产品定位</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">商业化大盘</h1>
+      <span class="sub" id="pageSub"></span>
+      <div class="topbar-right">
+        <div class="msearch" id="msearch">
+          <span class="ms-ico" id="msIco"></span>
+          <input id="msInput" placeholder="搜索商家" autocomplete="off" spellcheck="false"
+                 oninput="onMerchantSearch()" onfocus="onMerchantSearch()">
+          <div class="ms-drop" id="msDrop"></div>
+        </div>
+        <button class="icon-btn" title="待处理告警"><span id="icoBell"></span><i class="pip"></i></button>
+      </div>
+    </header>
+    <div class="view" id="view"></div>
+  </div>
+
+  <nav class="mobile-nav" id="mnav"></nav>
+</div>
+
+<!-- ===== 悬浮运营助手(全站可用,不随页面重渲染) ===== -->
+<div class="dw-mask" id="dwMask" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="dw-h">
+    <span class="mk" id="dwMk"></span>
+    <span class="ti"><strong>运营助手</strong><span id="dwCtx">基于知识库检索</span></span>
+    <button class="x" onclick="closeDrawer()" title="关闭">✕</button>
+  </div>
+  <div class="dw-body">
+    <div class="quick" id="dwQuick"></div>
+    <div class="chat" id="chatlog"></div>
+  </div>
+  <div class="dw-foot">
+    <div class="ctxbar" id="dwCtxBar"></div>
+    <div class="chips" id="dwChips"></div>
+    <div class="composer">
+      <input id="qin" placeholder="提问,例如:搜索转化率下滑怎么排查?" onkeydown="if(event.key==='Enter')askInput()">
+      <button class="btn-solid" onclick="askInput()">发送</button>
+    </div>
+  </div>
+</aside>
+<button class="fab" id="fab" onclick="openDrawer()" title="运营助手">
+  <span id="fabIco"></span><span class="fab-tip">运营助手</span>
+</button>
+
+<script>
+/* =========================================================
+   图标系统 · 全部内联 SVG,零外部依赖
+   设计原则:每个图标对应"用户旅程链路"上的一个环节,
+   形状上刻意做成可串联的一族(圆角、统一线宽、统一视框)
+   ========================================================= */
+const ICONS = {
+  /* 旅程链路图标族 */
+  exposure : '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3.1"/>',
+  click    : '<path d="M8.5 2.5v3M3 8h3M4.3 4.3l2.1 2.1"/><path d="M9.2 9.2l10.6 4.6-4.7 1.5-1.5 4.7-4.4-10.8z"/>',
+  cart     : '<circle cx="9.4" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2.2 3h2.9l2.7 12.3a1.9 1.9 0 001.9 1.5h7.9a1.9 1.9 0 001.9-1.5L21 7.2H6"/>',
+  deal     : '<path d="M4.5 2.6h15v18.8l-2.9-1.9-2.2 1.9-2.4-1.9-2.4 1.9-2.2-1.9-2.9 1.9z"/><path d="M8.4 8.2h7.2M8.4 12.1h4.8"/>',
+  repeat   : '<path d="M17 2.4l3.6 3.6L17 9.6"/><path d="M3.4 11.2V9.6a3.6 3.6 0 013.6-3.6h13.6"/><path d="M7 21.6L3.4 18 7 14.4"/><path d="M20.6 12.8v1.6a3.6 3.6 0 01-3.6 3.6H3.4"/>',
+  ltv      : '<path d="M6.4 2.8h11.2l4 6.4L12 21.6 2.4 9.2l4-6.4z"/><path d="M2.4 9.2h19.2M12 21.6L8 9.2l2.2-6.4M12 21.6l4-12.4-2.2-6.4"/>',
+  /* 广告主生命周期图标族 */
+  onboard  : '<path d="M14.6 3h4.2a1.2 1.2 0 011.2 1.2v15.6a1.2 1.2 0 01-1.2 1.2h-4.2"/><path d="M9.8 16.6L14.4 12 9.8 7.4"/><path d="M14.4 12H3.2"/>',
+  firstad  : '<circle cx="12" cy="12" r="9.2"/><path d="M10 8.2l6.2 3.8L10 15.8z"/>',
+  'scale-up': '<path d="M3 17.2l5.8-5.8 3.8 3.8L21 6.6"/><path d="M15.2 6.6H21v5.8"/>',
+  renew    : '<path d="M12 2.6l9 4.8-9 4.8-9-4.8 9-4.8z"/><path d="M3 12.2l9 4.8 9-4.8"/><path d="M3 16.9l9 4.8 9-4.8"/>',
+  expand   : '<path d="M5.5 13.5L12 10l6.5 3.5"/><path d="M4.6 17.1L12 21l7.4-3.9"/><path d="M12 3v9.4"/><path d="M8.7 6.1L12 3l3.3 3.1"/>',
+  /* 导航 */
+  dashboard: '<rect x="3" y="3" width="7.6" height="7.6" rx="2"/><rect x="13.4" y="3" width="7.6" height="7.6" rx="2"/><rect x="3" y="13.4" width="7.6" height="7.6" rx="2"/><rect x="13.4" y="13.4" width="7.6" height="7.6" rx="2"/>',
+  store    : '<path d="M4 10.2v9.4a1.4 1.4 0 001.4 1.4h13.2a1.4 1.4 0 001.4-1.4v-9.4"/><path d="M2.6 6.4l1.3-3.5h16.2l1.3 3.5a3.05 3.05 0 01-5.9.7 3.1 3.1 0 01-6.1 0 3.05 3.05 0 01-5.9-.7z"/><path d="M9.4 21v-5.4h5.2V21"/>',
+  pulse    : '<path d="M3 12h3.8l2.6-8.4L13 20.4l2.5-8.4H21"/>',
+  book     : '<path d="M4.2 19.4A2.6 2.6 0 016.8 16.8H20"/><path d="M6.8 2.4H20v18.8H6.8a2.6 2.6 0 01-2.6-2.6V5a2.6 2.6 0 012.6-2.6z"/>',
+  sparkle  : '<path d="M11.2 2.6l1.9 5.2 5.2 1.9-5.2 1.9-1.9 5.2-1.9-5.2-5.2-1.9 5.2-1.9 1.9-5.2z"/><path d="M18.6 15.4l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/>',
+  /* 运营助手 · 机器人(天线 + 头部 + 侧耳,眼睛用实心点保证小尺寸下可辨识) */
+  robot    : '<path d="M12 5.6V3.3"/><circle cx="12" cy="2.05" r="1.15" fill="currentColor" stroke="none"/>'
+           + '<rect x="3.8" y="5.6" width="16.4" height="14" rx="3.8"/>'
+           + '<path d="M3.8 11.2H2.1v3.6h1.7M20.2 11.2h1.7v3.6h-1.7"/>'
+           + '<circle cx="9.2" cy="11.6" r="1.35" fill="currentColor" stroke="none"/>'
+           + '<circle cx="14.8" cy="11.6" r="1.35" fill="currentColor" stroke="none"/>'
+           + '<path d="M9.4 15.9h5.2"/>',
+  /* 语义 */
+  alert    : '<path d="M10.3 3.9L1.9 18.1a2 2 0 001.7 3h16.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9.2v4M12 17.2h.01"/>',
+  arrowR   : '<path d="M4.6 12h14.2M12.6 5.6L19 12l-6.4 6.4"/>',
+  /* 漏斗连接件专用:横线画满整个 viewBox,箭头的**尖端正好落在横线的端点**上(21,12),
+     上下各留 5.6 —— 原来看起来「歪」就是因为尖端在 19、横线到 18.8,差半像素就显歪。 */
+  arrowLn  : '<path d="M2 12h19M16 6.4L21 12l-5 5.6"/>',
+  chevDown : '<path d="M5.6 8.8L12 15.2l6.4-6.4"/>',
+  search   : '<circle cx="11" cy="11" r="7.2"/><path d="M20.4 20.4l-4.1-4.1"/>',
+  bell     : '<path d="M18 8.4a6 6 0 10-12 0c0 6.9-2.8 8.8-2.8 8.8h17.6S18 15.3 18 8.4"/><path d="M13.7 21a2 2 0 01-3.4 0"/>',
+  coin     : '<circle cx="12" cy="12" r="9.2"/><path d="M9.4 9.6c0-.9 1.1-1.6 2.6-1.6s2.6.7 2.6 1.6-1.1 1.6-2.6 1.6-2.6.7-2.6 1.6 1.1 1.6 2.6 1.6 2.6-.7 2.6-1.6"/><path d="M12 6.4v11.2"/>',
+  users    : '<circle cx="9.2" cy="7.4" r="3.9"/><path d="M2.4 20.6v-1.8a5 5 0 015-5h3.6a5 5 0 015 5v1.8"/><path d="M17 3.8a3.9 3.9 0 010 7.2"/>',
+  shield   : '<path d="M12 2.4l7.8 3.6v5.8c0 4.8-3.3 8.3-7.8 9.8-4.5-1.5-7.8-5-7.8-9.8V6l7.8-3.6z"/><path d="M9.2 12.1l2 2 3.6-3.9"/>',
+  flame    : '<path d="M12 2.4s5.2 4.4 5.2 9.2a5.2 5.2 0 01-10.4 0c0-1.6.6-3 .6-3s-1.8 1.4-1.8 4.2a6.4 6.4 0 1012.8 0c0-6-6.4-10.4-6.4-10.4z"/>',
+  info     : '<circle cx="12" cy="12" r="9.2"/><path d="M12 11v5.4M12 7.9h.01"/>',
+  check    : '<path d="M4.8 12.6l4.8 4.8L19.2 7.8"/>',
+  layers   : '<path d="M12 2.6l9.2 4.7-9.2 4.7-9.2-4.7L12 2.6z"/><path d="M3.6 12.4l8.4 4.3 8.4-4.3"/><path d="M3.6 17l8.4 4.3 8.4-4.3"/>',
+  target   : '<circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.4"/>',
+  clock    : '<circle cx="12" cy="12" r="9.2"/><path d="M12 6.8V12l3.4 2"/>',
+  /* 产品需求:一个底座 + 向上顶出的箭头 = 把个案问题上报给产品与算法。
+     和「打法卡」的 book 刻意分开:两种沉淀物在页面上永远不共用同一个图标 */
+  need     : '<rect x="3.6" y="12.6" width="16.8" height="8.2" rx="2.4"/>'
+           + '<path d="M12 15.8V2.9"/><path d="M7.7 7.2L12 2.9l4.3 4.3"/>'
+};
+function icon(name, size){
+  size = size || 20;
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+       + 'stroke-linecap="round" stroke-linejoin="round" width="'+size+'" height="'+size+'">'
+       + (ICONS[name] || '') + '</svg>';
+}
+/* 旅途箭头:带转化率的连接段。
+   顺序是「箭头 → 转化率 → 流失数」,箭头放在第一行并固定 40px(等于图标块高度),
+   于是所有连接件都落在和图标同一个水平线上;转化率作为它的读数挂在下面。
+   之前箭头夹在中间、用 padding-top 去凑位置,是它看起来歪的直接原因。 */
+function jlink(rate, dropLabel, tone){
+  const color = tone === 'bad' ? 'var(--red)' : tone === 'warn' ? '#D97A00' : 'var(--t2)';
+  return '<div class="jlink">'
+    + '<div class="arrow">'+icon('arrowLn',26)+'</div>'
+    + '<div class="rate" style="color:'+color+'">'+rate+'</div>'
+    + (dropLabel ? '<div class="drop">'+dropLabel+'</div>' : '')
+    + '</div>';
+}
+function jstep(ic, name, num, note, hot){
+  return '<div class="jstep'+(hot?' hot':'')+'">'
+    + '<div class="ico">'+icon(ic,20)+'</div>'
+    + '<div class="name">'+name+'</div>'
+    + '<div class="num">'+num+'</div>'
+    + (note?'<div class="note">'+note+'</div>':'')
+    + '</div>';
+}
+/* 迷你 sparkline */
+function spark(pts, color){
+  const w=104,h=44,max=Math.max.apply(null,pts),min=Math.min.apply(null,pts);
+  const rng=(max-min)||1;
+  const d=pts.map(function(v,i){
+    const x=(i/(pts.length-1))*(w-8)+4;
+    const y=h-6-((v-min)/rng)*(h-16);
+    return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+  }).join(' ');
+  return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'
+    + '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>'
+    + '</svg>';
+}
+function delta(v, txt){
+  const cls = v>0?'up':v<0?'down':'flat';
+  const sym = v>0?'▲':v<0?'▼':'—';
+  return '<span class="delta '+cls+'">'+sym+' '+(txt||Math.abs(v)+'%')+'</span>';
+}
+
+/* =========================================================
+   数据层 · 全部为演示用虚构数据
+   ========================================================= */
+const DATA = {
+  platform : {
+    spend      : 4.28,     // 亿元
+    revenue    : 3.94,
+    activeMch  : 1286,
+    renewRate  : 78.4,
+    negative   : 0.62,     // 负反馈率 %
+  },
+  /* 广告主生命周期漏斗 —— 平台侧独有的第二条漏斗 */
+  lifecycle : [
+    { ic:'onboard',  name:'新商家入驻', num:'1,286', note:'本月新增 168' },
+    { ic:'firstad',  name:'完成首次投放', num:'842',  note:'7 日内激活' },
+    { ic:'scale-up', name:'跑量成功',   num:'517',  note:'连续 7 日有消耗' },
+    { ic:'renew',    name:'持续续投',   num:'389',  note:'次月仍在投' },
+    { ic:'expand',   name:'预算扩量',   num:'164',  note:'月消耗翻倍' }
+  ],
+  lifecycleRates : [
+    { rate:'65.5%', drop:'444 家未首投', tone:'bad'  },
+    { rate:'61.4%', drop:'325 家未跑量', tone:'warn' },
+    { rate:'75.2%', drop:'128 家流失',   tone:'warn' },
+    { rate:'42.2%', drop:'225 家未扩量', tone:'bad'  }
+  ],
+  /* 三方价值 —— 平台侧能同时看到三列,这是商家侧看不到的 */
+  triple : [
+    { key:'广告主侧', chip:'store',  color:'var(--blue)',   bg:'var(--blue-50)',
+      big:'ROAS 2.31', fine:'商家广告回报中位数 · 环比 +0.08' },
+    { key:'平台侧',   chip:'coin',   color:'var(--red)',    bg:'var(--red-50)',
+      big:'¥4.28 亿',  fine:'本月广告消耗 · 环比 +6.2%' },
+    { key:'用户侧',   chip:'shield', color:'var(--green)',  bg:'var(--green-50)',
+      big:'0.62%',     fine:'广告负反馈率 · 护栏阈值 0.80%' }
+  ],
+  alerts : [
+    { sev:'high', mch:'mock案例商家', what:'搜索承接环节转化率连续 3 日下滑', tag:'转化异常', time:'12 分钟前', page:'diagnosis' },
+    { sev:'mid',  mch:'AAA店家',      what:'冷启动计划连续 5 天未消耗',       tag:'跑量困难', time:'1 小时前' },
+    { sev:'mid',  mch:'BBB店家',      what:'复购率跌破同品类基准',           tag:'客户质量', time:'3 小时前' },
+    { sev:'low',  mch:'CCC店家',      what:'广告负反馈率上升至 0.91%',       tag:'生态风险', time:'5 小时前' },
+    { sev:'low',  mch:'DDD店家',      what:'素材审核驳回率异常',             tag:'资质问题', time:'昨天' }
+  ],
+  matrix : [
+    { stage:'投放获客', prod:'聚光 · 广告投放平台', tag:'广告流量与投放策略' },
+    { stage:'内容/达人', prod:'蒲公英 · 达人合作平台', tag:'内容种草' },
+    { stage:'店铺经营', prod:'千帆 · 商家经营平台', tag:'交易与私域' },
+    { stage:'客户资产', prod:'商家经营 CRM', tag:'★ 本作品', me:true },
+    { stage:'能力开放', prod:'开放平台 · Open API', tag:'能力输出' }
+  ]
+};
+
+/* 全局交互状态。
+   诊断页默认展示哪个商家,由当日告警的最高级别决定,而不是写死某一家——
+   页面不偏袒任何商家,优先级来自数据。 */
+const SEV_RANK = { high:0, mid:1, low:2 };
+function defaultMerchant(){
+  const a = DATA.alerts.slice().sort(function(x,y){ return SEV_RANK[x.sev] - SEV_RANK[y.sev]; })[0];
+  return a ? a.mch : 'mock案例商家';
+}
+const state = { merchant: defaultMerchant(), tier:'全部', riskOnly:false, kview:'cards', justCreated:null,
+                justNeed:null, dwCtx:true, kindOpen:{}, tierNoteOpen:false, healthNoteOpen:false };
+
+/* 商家列表 · 名称/月消耗(万)/ROAS/环比%/入驻天数/广告负反馈率%/素材审核驳回率%/复购率%
+   注意这里**既没有分层字段、也没有健康度**:两个都是算出来的,不是标上去的
+   (分层见下面 tierOf,健康度见 healthOf)。 */
+const MCH_RAW = [
+  ['mock案例商家', 38.6, 2.31, -14.2,  640, 0.58,  4.2, 31],
+  ['AAA店家',      8.2, 1.12, -22.5,   46, 0.95, 13.5, 14],
+  ['BBB店家',     21.4, 1.86,  -6.8,  385, 0.72,  6.8, 24],
+  ['CCC店家',     52.1, 2.64,   4.1,  910, 0.91,  3.1, 33],
+  ['DDD店家',     17.9, 3.02,   9.3,  300, 0.35,  2.4, 38],
+  ['EEE店家',     64.3, 3.31,   6.7, 1240, 0.26,  1.8, 41],
+  ['FFF店家',     13.6, 2.18,   1.2,  470, 0.55,  4.0, 30],
+  ['GGG店家',      5.4, 0.92, -31.4,   28, 1.15, 15.0, 11],
+  ['HHH店家',      3.1, 0.71, -38.9,  420, 1.32, 17.5,  8],
+  ['III店家',     26.8, 2.87,   5.5,  720, 0.33,  2.6, 37],
+  ['JJJ店家',     47.2, 3.14,   3.8, 1520, 0.29,  2.0, 40],
+  ['KKK店家',     11.3, 2.05,  -2.4,  410, 0.60,  4.6, 29],
+  ['LLL店家',      6.9, 1.48, -11.7,   73, 0.80,  9.2, 19],
+  ['MMM店家',      2.6, 0.83, -27.2,  268, 1.22, 16.2, 10],
+  ['NNN店家',     19.5, 2.53,   7.1,  560, 0.42,  3.4, 35],
+  ['OOO店家',     41.7, 2.95,   2.2,  880, 0.31,  2.2, 39],
+  ['PPP店家',      7.4, 1.31, -18.6,   61, 0.86, 10.5, 17]
+];
+
+/* 分层规则 · **只在「生命周期阶段」这一根轴上切**,四段互斥且穷尽。
+   判据只有两个字段:入驻天数(定阶段起点)、消耗环比(定阶段走向)。
+   **健康度不参与分层** —— 它是与生命周期正交的第二根轴,在列表里单独成列,
+   再配一个筛选器交叉查看(例如「成长期」里健康度已经报警的商家)。
+   早先的版本把消耗量级(KA)、风险状态(流失风险)、阶段(新客)混在同一层里,
+   于是「KA」和「流失风险」这种不同坐标系的标签并列,没人说得清一家商家该落在哪层。 */
+const TIER_NEW_DAYS = 90;    // 入驻 ≤90 天 → 新客期
+const TIER_MOM_FLAT = 3;     // 消耗环比 ±3% 以内视为「基本持平」
+
+/* ---- 健康度评分模型 ----
+   取四个**平台侧可直接观测**的指标,各自映射成 0~100 的分项分,再加权合成。
+   权重按「对经营结果的解释力」定:ROAS 最重(它直接就是投放回报),
+   广告负反馈率次之(它是生态护栏,越线会被限流,再高的 ROAS 也守不住),
+   素材审核驳回率与复购率各占两成。
+   **刻意不含「消耗环比」** —— 环比已经是分层的判据,再拿它算健康度,
+   两根轴就共线了,「成长期但健康度报警」这种交叉视角会直接消失。
+   分项分用**分档线性插值**、两端截断,而不是连续外推:
+   单个指标爆表不该把总分一路打到 0,那样一条负反馈率就能盖掉其余三项。 */
+const HEALTH_OK   = 75;   // ≥75 → 健康
+const HEALTH_RISK = 55;   // <55 → 风险(同时也是列表「只看风险」的筛选线,两处必须同源)
+const HEALTH_W = { roas:0.35, neg:0.25, rej:0.20, rep:0.20 };
+/* 分档锚点 [指标值, 分项分]。类目中位那一档统一记 70 上下,便于解释 */
+const H_ROAS = [[1.00,20],[1.50,45],[2.20,70],[3.00,90],[3.50,100]];
+const H_NEG  = [[0.20,95],[0.45,82],[0.62,70],[0.80,55],[1.20,25]];  // 越低越好
+const H_REJ  = [[1.0,95],[3.0,82],[5.0,70],[9.0,55],[15.0,25]];      // 越低越好
+const H_REP  = [[10,20],[18,40],[26,60],[34,80],[45,100]];
+const CLASS_MEDIAN = { roas:'2.20', neg:'0.62%', rej:'5%', rep:'26%' };
+const NEG_LIMIT    = '0.80%';   // 生态护栏阈值,与大盘「用户侧」那一列同一个数
+
+function pw(x, pts){
+  if(x <= pts[0][0]) return pts[0][1];
+  const last = pts[pts.length-1];
+  if(x >= last[0]) return last[1];
+  for(let i=0;i<pts.length-1;i++){
+    const a = pts[i], b = pts[i+1];
+    if(x >= a[0] && x <= b[0]) return a[1] + (b[1]-a[1])*(x-a[0])/(b[0]-a[0]);
+  }
+  return pts[0][1];
+}
+function healthParts(m){
+  return { roas:pw(m.roas,H_ROAS), neg:pw(m.negRate,H_NEG),
+           rej :pw(m.rejRate,H_REJ), rep:pw(m.repRate,H_REP) };
+}
+function healthOf(m){
+  const p = healthParts(m);
+  return Math.round(HEALTH_W.roas*p.roas + HEALTH_W.neg*p.neg
+                  + HEALTH_W.rej*p.rej   + HEALTH_W.rep*p.rep);
+}
+/* 四个分项分各自摊开 —— 悬停健康度可见,和分层标签的 tierWhy 是同一套思路 */
+function healthWhy(m){
+  const p = healthParts(m);
+  return '健康度 '+m.health+' 由四项加权算出:'
+       + ' ROAS '+m.roas.toFixed(2)+' → '+p.roas.toFixed(0)+' 分 ×35%'
+       + ' · 广告负反馈率 '+m.negRate.toFixed(2)+'% → '+p.neg.toFixed(0)+' 分 ×25%'
+       + ' · 素材审核驳回率 '+m.rejRate.toFixed(1)+'% → '+p.rej.toFixed(0)+' 分 ×20%'
+       + ' · 复购率 '+m.repRate+'% → '+p.rep.toFixed(0)+' 分 ×20%';
+}
+function tierOf(m){
+  if(m.days <= TIER_NEW_DAYS) return '新客期';
+  if(m.mom >  TIER_MOM_FLAT)  return '成长期';
+  if(m.mom < -TIER_MOM_FLAT)  return '衰退期';
+  return '成熟期';
+}
+/* 为什么这家在这层 —— 悬停分层标签时给出的推导过程,让规则可被逐条核对而不是只能相信 */
+function tierWhy(m){
+  const mom = (m.mom>=0?'+':'') + m.mom.toFixed(1) + '%';
+  if(m.days <= TIER_NEW_DAYS)
+    return '入驻 '+m.days+' 天（≤'+TIER_NEW_DAYS+'）→ 新客期 （先按阶段兜住，不看环比）';
+  if(m.mom > TIER_MOM_FLAT)
+    return '入驻 '+m.days+' 天 · 消耗环比 '+mom+'（&gt; +'+TIER_MOM_FLAT+'%）→ 成长期';
+  if(m.mom < -TIER_MOM_FLAT)
+    return '入驻 '+m.days+' 天 · 消耗环比 '+mom+'（&lt; −'+TIER_MOM_FLAT+'%）→ 衰退期';
+  return '入驻 '+m.days+' 天 · 消耗环比 '+mom+'（在 ±'+TIER_MOM_FLAT+'% 之间）→ 成熟期';
+}
+const MERCHANTS = MCH_RAW.map(function(r){
+  const m = { name:r[0], spend:r[1], roas:r[2], mom:r[3], days:r[4],
+              negRate:r[5], rejRate:r[6], repRate:r[7] };
+  m.tier   = tierOf(m);
+  m.why    = tierWhy(m);
+  m.health = healthOf(m);          // 算出来的,不是这一行的输入
+  m.hw     = healthWhy(m);
+  return m;
+});
+/* 按名称取商家 —— 文案里要引用某家的读数时用它,不要再把数字抄进字符串里 */
+function mchOf(n){ return MERCHANTS.filter(function(m){ return m.name === n; })[0]; }
+/* 数组顺序 = 生命周期顺序,看板的分段条与图例都按这个顺序排,读起来就是一条时间轴 */
+const TIERS = ['新客期','成长期','成熟期','衰退期'];
+/* 分层名第一次出现的地方就给全称,免得只有缩写或只有两个字、看不出它的判据 */
+const TIER_FULL = {
+  '新客期':'新客期 · 入驻 ≤'+TIER_NEW_DAYS+' 天，尚在建立投放习惯',
+  '成长期':'成长期 · 消耗环比 &gt; +'+TIER_MOM_FLAT+'%，仍在爬坡',
+  '成熟期':'成熟期 · 消耗环比在 ±'+TIER_MOM_FLAT+'% 之间，经营稳定',
+  '衰退期':'衰退期 · 消耗环比 &lt; −'+TIER_MOM_FLAT+'%，需介入止损'
+};
+/* 生命周期是一条时间轴,配色也按时间轴走:蓝(新) → 绿(涨) → 紫(稳) → 红(落) */
+const TIER_COLOR = { '新客期':'#3B6EFF', '成长期':'#00B578', '成熟期':'#7B5CFF', '衰退期':'#FF2442' };
+/* 单层内部按商家拆消耗时用的同色阶:首档即该分层的代表色,逐档变浅,
+   最后一个分档之外的长尾统一归入「其他」的中性灰。 */
+const TIER_RAMP = {
+  '新客期':['#3B6EFF','#6289FF','#8AA7FF','#B0C4FF','#D5E0FF'],
+  '成长期':['#00B578','#33C493','#66D3AE','#99E2C9','#CCF0E4'],
+  '成熟期':['#7B5CFF','#957FFF','#B09CFF','#CBBDFF','#E5DEFF'],
+  '衰退期':['#FF2442','#FF5C6E','#FF8A96','#FFB3BB','#FFD5DA']
+};
+const SEG_OTHER = '#D8D8DF';
+const TIER_TOP_N = 5;
+
+/* 两个投放入口是怎么触达用户的。悬停入口名可见 ——
+   信息流是推荐流里的被动触达,搜索是关键词的主动触达,CTR 能差好几倍是这件事的直接结果,
+   不是数据填错了。不写出来,读者看到「曝光只有三分之一、点击反而更多」只会觉得数字有问题。 */
+const ENT_DESC = {
+  '信息流':'推荐流广告 · 用户在刷内容时被动触达，没有主动表达意图 —— 曝光量大，CTR 天然偏低',
+  '搜索'  :'搜索结果广告 · 用户主动搜索关键词后触达，意图明确 —— 曝光量小，CTR 天然偏高'
+};
+
+/* 单商家诊断数据 · 三个商家覆盖三种不同的断点位置 */
+const DIAG = {
+  'mock案例商家': {
+    sector:'美妆护肤',
+    entrances:[
+      { key:'信息流', ic:'exposure', color:'var(--orange)', bg:'var(--orange-50)',
+        exposure:'1,240 万', click:'37.2 万', ctr:'3.0%', brk:false },
+      { key:'搜索',   ic:'search',   color:'var(--blue)',   bg:'var(--blue-50)',
+        exposure:'380 万',  click:'43.6 万', ctr:'11.5%', brk:true }
+    ],
+    main:[
+      { ic:'cart',   name:'进店 / 加购', num:'218,000', note:'来自两个入口', flag:'断点' },
+      { ic:'deal',   name:'成交',       num:'8,640',   note:'成交转化 3.96%' },
+      { ic:'repeat', name:'复购',       num:'2,160',   note:'30 日复购 25.0%' },
+      { ic:'ltv',    name:'LTV',        num:'¥386',    note:'12 个月口径' }
+    ],
+    mergeRate:'27.0%',
+    cpa:{ cpm:42, ctr:2.1, cvr:2.5 },
+    triple:[
+      { k:'商家 ROAS', v:'2.31', f:'行业基准 2.68 · 低于基准', tone:'bad' },
+      { k:'平台消耗',  v:'¥38.6 万', f:'环比 −14.2%', tone:'bad' },
+      { k:'用户负反馈', v:'0.48%', f:'护栏阈值 0.80% · 安全', tone:'ok' }
+    ],
+    verdict:'搜索入口点击 43.6 万、CTR 11.5%，关键词意图匹配正常；但两个入口汇入「进店 / 加购」的综合转化率为 27.0%，流失集中在搜索承接之后。判断问题位于承接链路，建议优先排查落地页与商品信息一致性，暂不调整出价。'
+  },
+  'AAA店家': {
+    sector:'母婴',
+    entrances:[
+      { key:'信息流', ic:'exposure', color:'var(--orange)', bg:'var(--orange-50)',
+        exposure:'86 万', click:'1.2 万', ctr:'1.4%', brk:true },
+      { key:'搜索',   ic:'search',   color:'var(--blue)',   bg:'var(--blue-50)',
+        exposure:'22 万', click:'0.9 万', ctr:'4.1%', brk:false }
+    ],
+    main:[
+      { ic:'cart',   name:'进店 / 加购', num:'4,200', note:'来自两个入口' },
+      { ic:'deal',   name:'成交',       num:'860',   note:'成交转化 20.5%' },
+      { ic:'repeat', name:'复购',       num:'210',   note:'30 日复购 24.4%' },
+      { ic:'ltv',    name:'LTV',        num:'¥1,240', note:'12 个月口径' }
+    ],
+    mergeRate:'20.0%',
+    cpa:{ cpm:58, ctr:1.4, cvr:3.2 },
+    triple:[
+      { k:'商家 ROAS', v:'1.12', f:'行业基准 1.95 · 显著低于基准', tone:'bad' },
+      { k:'平台消耗',  v:'¥8.2 万', f:'环比 −22.5% · 花不完预算', tone:'bad' },
+      { k:'用户负反馈', v:'0.31%', f:'护栏阈值 0.80% · 安全', tone:'ok' }
+    ],
+    verdict:'两个入口 CTR 均偏低（信息流 1.4%、搜索 4.1%），但点击后的转化正常（成交转化 20.5%、30 日复购 24.4%）。流失集中在「曝光 → 点击」环节，属于冷启动期定向覆盖与素材吸引力问题，承接链路无需调整。'
+  },
+  'BBB店家': {
+    sector:'家居',
+    entrances:[
+      { key:'信息流', ic:'exposure', color:'var(--orange)', bg:'var(--orange-50)',
+        exposure:'620 万', click:'24.8 万', ctr:'4.0%', brk:false },
+      { key:'搜索',   ic:'search',   color:'var(--blue)',   bg:'var(--blue-50)',
+        exposure:'190 万', click:'16.6 万', ctr:'8.7%', brk:false }
+    ],
+    main:[
+      { ic:'cart',   name:'进店 / 加购', num:'124,000', note:'来自两个入口' },
+      { ic:'deal',   name:'成交',       num:'6,200',   note:'成交转化 5.0%' },
+      { ic:'repeat', name:'复购',       num:'620',     note:'30 日复购 10.0%', flag:'断点' },
+      { ic:'ltv',    name:'LTV',        num:'¥215',    note:'12 个月口径' }
+    ],
+    mergeRate:'30.0%',
+    cpa:{ cpm:36, ctr:3.2, cvr:4.1 },
+    triple:[
+      { k:'商家 ROAS', v:'1.86', f:'行业基准 2.10 · 略低于基准', tone:'warn' },
+      { k:'平台消耗',  v:'¥21.4 万', f:'环比 −6.8%', tone:'warn' },
+      { k:'用户负反馈', v:'0.55%', f:'护栏阈值 0.80% · 安全', tone:'ok' }
+    ],
+    verdict:'曝光、点击、成交各环节均处于正常区间，但 30 日复购率 10.0%，低于行业基准 22%。12 个月 LTV ¥215 是在 30 日复购达标的前提下测算的，按当前复购水平该口径难以兑现，LTV/CPA 会随投放周期拉长而恶化。建议按留存事件优化，暂缓放量。'
+  }
+};
+
+/* 知识库 · 打法卡（结构与文档 §5.1 一致：适用场景—策略设置—效果结果—限制条件） */
+/* 知识库初始语料。运营在诊断页新沉淀的卡片存在 localStorage,启动时并入本数组 */
+const CARDS_SEED = [
+  { id:'C-014', title:'搜索泛词转长尾词，压低无效扩词', status:'已验证', src:'mock案例商家', kind:'carry',
+    scene:'搜索投放中泛词消耗占比高、成交转化低，CPA 持续高于目标',
+    setup:'把泛词单独建组做低出价观测，将预算迁移到「品牌词 + 场景长尾词」；每周按搜索词报告淘汰无成交词',
+    effect:'有效订单成本下降 23%，泛词占比从 61% 降到 34%',
+    limit:'仅适用于搜索词报告可用的账户；类目词竞争激烈时迁移速度要放慢',
+    tags:['搜索','泛词','长尾词','扩词','转化率','投放'] },
+  { id:'C-009', title:'冷启动期合并过细计划，先跑出量再谈优化', status:'已验证', src:'AAA店家', kind:'click',
+    scene:'新计划连续多日不消耗，预算花不出去，样本量不足以判断任何变量',
+    setup:'合并同类定向的碎片化计划，放宽定向覆盖，先用 3 天把消耗跑起来；期间不做频繁调价',
+    effect:'3 日内消耗恢复至预算的 78%，冷启动通过率提升',
+    limit:'合并会牺牲部分定向精度，跑量稳定后仍需拆回精细化结构',
+    tags:['冷启动','跑量','新商家','消耗','预算','投放'] },
+  { id:'C-021', title:'复购事件前置到首单后 7 日，纠偏出价目标', status:'验证中', src:'BBB店家', kind:'repeat',
+    scene:'短期成交正常但 30 日复购显著低于行业基准，LTV 撑不住当前出价',
+    setup:'把优化事件从「成交」改为「首单后 7 日复购」，用小流量组验证；同时复核履约与产品体验',
+    effect:'复购事件回传后 4 周，复购率提升 6.4pt，CPA 名义上升但 LTV/CPA 转正',
+    limit:'需要后端订单系统能回传延迟事件，样本累积慢，至少观察 4 周',
+    tags:['复购','留存','LTV','出价','客户质量','家居'] },
+  { id:'C-017', title:'负反馈率越线时的频控收紧与素材替换', status:'已验证', src:'CCC店家',
+    scene:'广告负反馈率接近或越过护栏阈值，继续加量会损伤内容生态',
+    setup:'对同一人群收紧频次上限，下线被集中负反馈的素材版本，替换为体验向内容后再逐步放量',
+    effect:'负反馈率回落至阈值内，曝光量两周内恢复 92%',
+    limit:'收紧频控会短暂压低消耗，需要与收入目标做取舍并向上同步',
+    tags:['负反馈','护栏','频控','素材','生态','用户体验'] },
+  { id:'C-002', title:'新商家首投代投引导，压缩入驻到首投的流失', status:'已验证', src:'平台沉淀',
+    scene:'新入驻商家 7 日内未完成首次投放，入驻→首投转化率仅 65.5%',
+    setup:'首投前推送行业基准与创意模板，开放代投支持；对 3 日未动账的新商家触发运营介入',
+    effect:'入驻→首投转化率提升 11.2pt，新商家首月留存明显改善',
+    limit:'依赖运营人力投入，规模扩大后需转为产品化自动触达',
+    tags:['新商家','入驻','首投','冷启动','留存','平台'] },
+  { id:'C-025', title:'高意图词与泛兴趣人群的分层出价', status:'验证中', src:'mock案例商家',
+    scene:'同一计划里高意向与泛兴趣人群混跑，平均成本掩盖了两端差异',
+    setup:'按人群意图拆成两组，高意向组保留价格竞争力，泛兴趣组压价观测增量',
+    effect:'拆分后高意向组 CPA 下降 18%，泛兴趣组的边际贡献变得可测',
+    limit:'拆组会稀释单组样本量，需保证每组有足够转化数才能下结论',
+    tags:['人群','分层','出价','意向','定向','美妆'] }
+];
+/* ---------- 手法卡库的本地持久化 ----------
+   演示环境是纯前端单文件,没有后端可写。用 localStorage 承载两样东西:
+   1) 运营在诊断页新沉淀的卡片(只有这部分需要存,初始语料恒定)
+   2) 每张卡的累计被引用次数
+   刷新/切换页面都不丢,配合页面上的「重置演示数据」可回到初始状态。 */
+const LS_CARDS = 'xhs_crm_cards_v1';
+const LS_REFS  = 'xhs_crm_refs_v1';
+const KB_TODAY = '2026-10-14';
+
+function lsGet(k){
+  try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; }
+}
+function lsSet(k, v){
+  try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ /* 隐私模式下静默降级为内存态 */ }
+}
+
+/* 卡片数组以「本地新卡在前、初始语料在后」的顺序组装,新建的卡在知识库里一眼可见 */
+function loadCards(){
+  const mine = lsGet(LS_CARDS);
+  /* 种子卡逐个克隆后并入,保证 CARDS_SEED 只是一份模板,不会被运行时改动污染 */
+  return (Array.isArray(mine) ? mine : [])
+    .concat(CARDS_SEED.map(function(c){ return Object.assign({}, c); }));
+}
+function saveCards(){
+  lsSet(LS_CARDS, CARDS.filter(function(c){ return c.mine; }));
+}
+
+/* 被引用次数 = 初始基线 + 本次会话的真实检索命中次数 */
+const REF_SEED = { 'C-014':7, 'C-009':4, 'C-021':3, 'C-017':5, 'C-002':12, 'C-025':2 };
+let REF_LIVE = (function(){
+  const r = lsGet(LS_REFS);
+  return (r && typeof r === 'object') ? r : {};
+})();
+function refsOf(id){ return (REF_SEED[id] || 0) + (REF_LIVE[id] || 0); }
+/* 一次问答只有「被当成首选答案引用」的那张卡计数,而不是所有高匹配卡都算 */
+function bumpRef(id){
+  REF_LIVE[id] = (REF_LIVE[id] || 0) + 1;
+  lsSet(LS_REFS, REF_LIVE);
+}
+
+let CARDS = loadCards();
+
+/* =========================================================
+   产品需求 · 第二种沉淀物
+   ---------------------------------------------------------
+   打法卡沉淀给**商家**复用,产品需求沉淀给**产品与算法**。
+   同一个断点走哪条出口,判据只有一条:这个断点能不能由商家自己的动作修复。
+     · 断点由商家操作致因(出价、定向、素材、落地页) → 打法卡
+     · 断点由平台能力致因(模型、回传、审核、报表)   → 产品需求
+   这条出口对应方法论里「与产品算法共建实验,优化出价、召回、质量预测与报表」那一类工作,
+   也是平台侧运营区别于单个广告主优化动作的地方:个案要被升格成系统能力,而不只是被解决掉。
+
+   闭环:诊断页定位断点 → 页面实时算出影响面与已试动作 → 登记需求
+        → 状态推进到「已排期」→ **对应商家的诊断页出现回执**
+   ========================================================= */
+const LS_NEEDS  = 'xhs_crm_needs_v1';
+const NEED_FLOW = ['提案','评估中','已排期','已上线'];
+/* 平台能力清单取自方法论 §6.2 那一行:出价、召回、质量预测与报表,再补上回传 / 审核 / 频控 */
+const NEED_KINDS= ['出价','召回','质量预测','报表','回传','审核','频控'];
+/* 只有进到这两态,诊断页才会出现回执 —— 「提案」「评估中」还没人认领,不该对外承诺 */
+const NEED_SHOW = ['已排期','已上线'];
+const NEED_STATUS_CLS = { '提案':'gray', '评估中':'orange', '已排期':'blue', '已上线':'green' };
+/* 每一态对商家侧意味着什么。状态由产品 / 算法侧维护,运营改不了,
+   所以这里只陈述「现在处在哪、对外可见不可见」,不提供任何推进入口。 */
+const NEED_PROGRESS = {
+  '提案'  : '刚登记，尚无产品侧认领 —— 按约定不对商家侧可见',
+  '评估中': '产品侧评估中，尚未进入排期 —— 仍不对外可见',
+  '已排期': '已排期 —— 对应商家的诊断页已出现这条需求的回执',
+  '已上线': '已上线 —— 回执保留，且已计入覆盖商家与覆盖消耗'
+};
+
+/* 断点类型 → 默认填什么。运营可以改,但默认值来自断点本身,不是让运营从零想 */
+const NEED_KINDDEF = { carry:'回传', click:'召回', repeat:'回传', none:'报表' };
+const NEED_TITLE = {
+  carry : '承接环节转化回传延迟，运营拿不到有效读数',
+  click : '冷启动期定向覆盖不足，新计划跑不出量',
+  repeat: '复购事件回传晚于出价学习窗口，复购质量进不了竞价',
+  none  : '平台侧问题登记'
+};
+const NEED_PROBLEM = {
+  carry : '搜索与信息流承接之后的转化事件回传链路长，运营在观察期内拿不到可靠读数，'
+        + '无法判断承接环节的改动是否真的生效，只能靠延长观察期来兜。',
+  click : '冷启动期新计划的定向覆盖不足，曝光跑不满预算，样本量不足以判断任何变量；'
+        + '运营只能在「放宽定向」和「等样本」之间反复摇摆。',
+  repeat: '复购事件发生晚于出价模型的学习窗口，系统按短期成交优化，'
+        + '复购质量无法进入竞价，前端越跑越贵而 LTV 撑不住。',
+  none  : '该商家链路当前无显著断点，此处仅登记诊断过程中发现的平台侧问题。'
+};
+
+/* 初始语料把四种状态都摆出来(提案 / 评估中 / 已排期 / 已上线各至少一条),
+   这样状态机一进页面就能看出它有几步、走到哪一步才对外可见 —— 不需要任何点按操作。
+   每条的影响面都不写在字符串里 —— 由断点实时算出,和打法卡同一套口径。 */
+const NEEDS_SEED = [
+  { id:'R-001', status:'已排期', src:'平台沉淀', bp:'carry', kind:'回传',
+    title:NEED_TITLE.carry,   problem:NEED_PROBLEM.carry,
+    ask:'把「进店 / 加购」的回传时延纳入 SLA，并提供承接环节的事件到达率看板，让观察期有据可依。' },
+  { id:'R-002', status:'已排期', src:'平台沉淀', bp:'click', kind:'召回',
+    title:NEED_TITLE.click,   problem:NEED_PROBLEM.click,
+    ask:'给新计划一个独立的冷启动召回池，在样本稀疏阶段放宽覆盖，跑出量之后再逐步收敛定向。' },
+  { id:'R-003', status:'已上线', src:'平台沉淀', bp:'repeat', kind:'回传',
+    title:NEED_TITLE.repeat,  problem:NEED_PROBLEM.repeat,
+    ask:'支持把「首单后 7 日复购」作为优化目标回传，并相应延长出价模型的学习窗口。' },
+  { id:'R-004', status:'评估中', src:'平台沉淀', bp:'click', kind:'质量预测',
+    title:'低意图流量在冷启动期占用预算',
+    problem:'质量预测模型对冷启动账户缺少历史特征，低意图流量与高意图流量同价竞争，'
+          + '把有限的首投预算消耗在不会转化的曝光上。',
+    ask:'为新账户启用类目先验的质量预测兜底，让首投预算优先进入高意图流量。' },
+  { id:'R-005', status:'提案', src:'平台沉淀', bp:'click', kind:'审核',
+    title:'素材驳回原因粒度太粗，商家只能反复重提试错',
+    problem:'审核结果只返回一个笼统的驳回原因，商家判断不出问题出在画面、文案还是资质，'
+          + '只能一条条重提试错，冷启动期被素材反复驳回拖掉了大半观察窗口。',
+    ask:'驳回结果按可枚举的原因项返回（画面 / 文案 / 资质 / 类目），并在后台标记高频驳回项。' }
+];
+
+function loadNeeds(){
+  const mine = lsGet(LS_NEEDS);
+  /* 和打法卡同款:种子只当模板,克隆后并入,运行时改不到模板本身 */
+  return (Array.isArray(mine) ? mine : [])
+    .concat(NEEDS_SEED.map(function(n){ return Object.assign({}, n); }));
+}
+function saveNeeds(){
+  lsSet(LS_NEEDS, NEEDS.filter(function(n){ return n.mine; }));
+}
+let NEEDS = loadNeeds();
+function nextNeedId(){
+  let max = 0;
+  NEEDS.forEach(function(n){
+    const m = /^R-(\d+)$/.exec(n.id);
+    if(m && +m[1] > max) max = +m[1];
+  });
+  return 'R-' + String(max + 1).padStart(3, '0');
+}
+
+
+
+/* =========================================================
+   路由与页面
+   ========================================================= */
+const PAGES = {
+  overview : { title:'商业化大盘', sub:'全部商家的经营与收入健康度',
+    ico:'dashboard', ink:'dashboard' },
+  merchants: { title:'商家管理',   sub:'客户分层、健康度与流失预警',
+    ico:'store', ink:'store' },
+  diagnosis: { title:'商家诊断',   sub:'单商家转化链路断点定位与 CPA 拆解',
+    ico:'pulse', ink:'pulse', badge:5 },
+  knowledge: { title:'知识库 / 沉淀', sub:'个案沉淀为打法卡与产品需求的知识库',
+    ico:'book', ink:'book' }
+};
+const ORDER = ['overview','merchants','diagnosis','knowledge'];
+// 商家搜索可用的页面:大盘面向全部商家,故不在此列
+const SEARCH_PAGES = ['merchants','diagnosis'];
+
+/* ---- 页1:商业化大盘 ---- */
+function pageOverview(){
+  const p = DATA.platform;
+  const lc = DATA.lifecycle.map(function(s,i){
+    return (i? jlink(DATA.lifecycleRates[i-1].rate, DATA.lifecycleRates[i-1].drop, DATA.lifecycleRates[i-1].tone) : '')
+         + jstep(s.ic, s.name, s.num, s.note, i===0 || i===4);
+  }).join('');
+
+  const kpis = [
+    { lab:'本月广告消耗', ic:'flame', val:p.spend, unit:'亿', v:6.2, spark:[2.9,3.1,3.0,3.4,3.6,3.7,4.0,4.28], color:'#FF2442' },
+    { lab:'平台广告收入', ic:'coin',  val:p.revenue, unit:'亿', v:5.4, spark:[2.7,2.9,2.9,3.2,3.3,3.5,3.7,3.94], color:'#FF8F1F' },
+    { lab:'活跃投放商家', ic:'users', val:'1,286', unit:'家', v:3.1, spark:[1080,1098,1120,1132,1160,1191,1240,1286], color:'#3B6EFF' },
+    { lab:'广告主续投率', ic:'repeat', val:'78.4', unit:'%', v:-1.6, spark:[80.2,80.6,79.9,79.4,79.0,78.8,78.5,78.4], color:'#7B5CFF' }
+  ].map(function(k){
+    return '<div class="card kpi">'
+      + '<div class="lab">'+icon(k.ic,15)+k.lab+'</div>'
+      + '<div class="val">'+k.val+'<span class="unit">'+k.unit+'</span></div>'
+      + '<div class="foot">'+delta(k.v)+'<span>环比上月</span></div>'
+      + spark(k.spark, k.color)
+      + '</div>';
+  }).join('');
+
+  const triple = DATA.triple.map(function(t){
+    return '<div class="tcard">'
+      + '<div class="hd"><span class="chip" style="background:'+t.bg+';color:'+t.color+'">'+icon(t.chip,13)+'</span>'+t.key+'</div>'
+      + '<div class="big">'+t.big+'</div>'
+      + '<div class="fine">'+t.fine+'</div>'
+      + '</div>';
+  }).join('');
+
+  const alerts = DATA.alerts.map(function(a){
+    return '<div class="alert" onclick="onAlert(\''+a.mch+'\')">'
+      + '<span class="sev '+a.sev+'">'+icon('alert',15)+'</span>'
+      + '<span class="who">'+a.mch+'</span>'
+      + '<span class="what">'+a.what+'</span>'
+      + '<span class="meta"><span class="pill '+(a.sev==='high'?'red':a.sev==='mid'?'orange':'gray')+'">'+a.tag+'</span>'
+      + '<span class="time">'+a.time+'</span></span>'
+      + '</div>';
+  }).join('');
+
+  return ''
+  + '<div class="kpis">'+kpis+'</div>'
+
+  + '<div class="sec-title">'+icon('layers',16)+'广告主生命周期漏斗'
+    + '<span class="hint">各阶段商家规模与阶段间转化率</span></div>'
+  + '<div class="card"><div class="card-b"><div class="journey">'+lc+'</div>'
+    + '<div class="hr"></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--t2)">'
+    + icon('info',15)
+    + '<span>最大流失位于 <b style="color:var(--red-600)">入驻 → 首次投放（65.5%）</b>：444 家新商家未在 7 日内产生有效消耗，为当月首要优化项。</span>'
+    + '</div></div></div>'
+
+  + '<div class="sec-title">'+icon('target',16)+'三方价值读数'
+    + '<span class="hint">广告主回报、平台收入与用户体验的当期读数</span></div>'
+  + '<div class="triple">'+triple+'</div>'
+
+  + '<div class="two-col" style="margin-top:26px">'
+  +   '<div>'
+  +     '<div class="sec-title" style="margin-top:0">'+icon('bell',16)+'待处理商家告警'
+  +       '<span class="hint">点击任一告警可直接下钻诊断</span></div>'
+  +     '<div class="card"><div class="card-b"><div class="alerts">'+alerts+'</div></div></div>'
+  +   '</div>'
+  +   '<div>'
+  +     '<div class="sec-title" style="margin-top:0">'+icon('pulse',16)+'下一步建议</div>'
+  +     '<div class="card"><div class="card-b">'
+  +       '<div style="font-size:13px;color:var(--t2);line-height:1.75">'
+  +       '<div class="advice" onclick="openMerchant(\'mock案例商家\')">'+icon('check',16)
+  +       '<span><b style="color:var(--t1)">优先处理「mock案例商家」</b>'
+  +       '<span class="go">进入诊断 '+icon('arrowR',13)+'</span>'
+  +       '<br>搜索承接转化率下滑，影响本月 ¥38.6 万消耗，是当前告警中金额最大的单点。</span></div>'
+  +       '<div class="advice" onclick="state.tier=\'新客期\';state.riskOnly=false;go(\'merchants\')">'+icon('check',16)
+  +       '<span><b style="color:var(--t1)">抽查入驻→首投断点</b>'
+  +       '<span class="go">看新客期 '+icon('arrowR',13)+'</span>'
+  +       '<br>444 家新商家未完成首投，可联合行业运营输出新手引导与代投支持。</span></div>'
+  +       '<div class="advice" onclick="openMerchant(\'CCC店家\')">'+icon('check',16)
+  +       '<span><b style="color:var(--t1)">关注生态护栏</b>'
+  +       '<span class="go">进入诊断 '+icon('arrowR',13)+'</span>'
+  +       '<br>CCC店家负反馈率 '+mchOf('CCC店家').negRate.toFixed(2)+'% 已越线（护栏 '+NEG_LIMIT+'），需在收入与体验之间做权衡。</span></div>'
+  +       '</div>'
+  +       '<div class="hr"></div>'
+  +       '<button class="pill red" style="padding:7px 14px;font-size:12.5px;cursor:pointer" onclick="openDrawer()">'
+  +         '打开运营助手 →</button>'
+  +     '</div></div>'
+  +   '</div>'
+  + '</div>';
+}
+
+/* ---- 通用小组件 ---- */
+const TIER_BG = { '新客期':'var(--blue-50)', '成长期':'var(--green-50)', '成熟期':'var(--purple-50)', '衰退期':'var(--red-50)' };
+const TIER_FG = { '新客期':'var(--blue)', '成长期':'var(--green)', '成熟期':'var(--purple)', '衰退期':'var(--red-600)' };
+
+function healthColor(v){ return v>=75 ? 'var(--green)' : v>=55 ? 'var(--orange)' : 'var(--red)'; }
+/* 传了 why 就把四个分项分挂上去,悬停可见 —— 健康度因此是可拆解、可核对的,不是一个黑箱数字 */
+function healthBar(v, why){
+  return '<div class="health'+(why?' why':'')+'"'+(why?' title="'+why+'" data-why="'+why+'"':'')+'>'
+       + '<div class="bar"><i style="width:'+v+'%;background:'+healthColor(v)+'"></i></div>'
+       + '<span class="v" style="color:'+healthColor(v)+'">'+v+'</span></div>';
+}
+/* 分层口径 —— 默认收起,点标题才展开。展开状态放在 state 里,切分层不会自己合上。
+   页面上常驻的是数据本身,规则放在一次点击之后。 */
+function tierNote(){
+  const open = !!state.tierNoteOpen;
+  return '<div class="tiernote'+(open?' on':'')+'">'
+    + '<button class="tn-head" onclick="toggleTierNote()" aria-expanded="'+(open?'true':'false')+'">'
+    +   icon('info',14)
+    +   '<span class="tn-title">分层口径</span>'
+    +   '<span class="tn-hint">'+(open ? '点击收起' : '点击查看分层规则')+'</span>'
+    +   '<span class="chev">'+icon('chevDown',14)+'</span>'
+    + '</button>'
+    + (open ? '<div class="tn-body">'
+    +   '<div class="rl">'
+    +     '<span class="st">1</span>入驻 <b>≤'+TIER_NEW_DAYS+' 天</b> → <b>新客期</b>'
+    +     '（先按阶段兜住，不再判断环比方向）</div>'
+    +   '<div class="rl">'
+    +     '<span class="st">2</span>入驻 &gt;'+TIER_NEW_DAYS+' 天,消耗环比 <b>&gt; +'+TIER_MOM_FLAT+'%</b> → <b>成长期</b></div>'
+    +   '<div class="rl">'
+    +     '<span class="st">3</span>入驻 &gt;'+TIER_NEW_DAYS+' 天,环比在 <b>−'+TIER_MOM_FLAT+'% ~ +'+TIER_MOM_FLAT+'%</b> → <b>成熟期</b></div>'
+    +   '<div class="rl">'
+    +     '<span class="st">4</span>入驻 &gt;'+TIER_NEW_DAYS+' 天,消耗环比 <b>&lt; −'+TIER_MOM_FLAT+'%</b> → <b>衰退期</b></div>'
+    +   '<div class="ft">判据只有「入驻天数」和「消耗环比」两个字段,分层是实时算出来的,不是人工打的标签 —— '
+    +     '悬停商家列表里任一分层标签,可以看到这家具体是按哪一步落进来的。<br>'
+    +     '<b>健康度是另一根轴</b>:它不参与分层,而是作为独立一列与生命周期交叉 —— '
+    +     '用列表上方的「只看风险」芯片就能筛出「仍在成长期、但健康度已经报警」的商家,'
+    +     '这类交叉视角才是分层真正起作用的地方。</div>'
+    + '</div>' : '')
+    + '</div>';
+}
+
+/* 健康度口径 —— 和分层口径同一套收起/展开样式,免得两套控件长得不一样。
+   这是「健康度到底怎么算的」这句话在产品里的落点:模型、权重、锚点全写明,
+   悬停列表里的健康度还能看到每一家的四个分项分。 */
+function healthNote(){
+  const open = !!state.healthNoteOpen;
+  return '<div class="tiernote'+(open?' on':'')+'">'
+    + '<button class="tn-head" onclick="toggleHealthNote()" aria-expanded="'+(open?'true':'false')+'">'
+    +   icon('pulse',14)
+    +   '<span class="tn-title">健康度口径</span>'
+    +   '<span class="tn-hint">'+(open ? '点击收起' : '点击查看评分模型')+'</span>'
+    +   '<span class="chev">'+icon('chevDown',14)+'</span>'
+    + '</button>'
+    + (open ? '<div class="tn-body">'
+    +   '<div style="margin-bottom:6px">健康度 = '
+    +     '<b>35%</b> × ROAS 分 + <b>25%</b> × 广告负反馈分 + <b>20%</b> × 素材驳回分 + <b>20%</b> × 复购分</div>'
+    +   '<div class="rl"><span class="st">1</span><b>ROAS</b>（35%）—— 类目中位 '
+    +     CLASS_MEDIAN.roas+' 记 70 分,到 3.00 记 90 分以上</div>'
+    +   '<div class="rl"><span class="st">2</span><b>广告负反馈率</b>（25%）—— 类目中位 '
+    +     CLASS_MEDIAN.neg+' 记 70 分,到生态护栏线 '+NEG_LIMIT+' 掉到 55 分,越线继续下探</div>'
+    +   '<div class="rl"><span class="st">3</span><b>素材审核驳回率</b>（20%）—— 中位 '
+    +     CLASS_MEDIAN.rej+' 记 70 分,升到 9% 记 55 分</div>'
+    +   '<div class="rl"><span class="st">4</span><b>复购率</b>（20%）—— 中位 '
+    +     CLASS_MEDIAN.rep+' 记 60 分,降到 18% 记 40 分</div>'
+    +   '<div class="ft"><b>≥'+HEALTH_OK+'</b> 健康 · <b>'+HEALTH_RISK+'~'+(HEALTH_OK-1)
+    +     '</b> 关注 · <b>&lt;'+HEALTH_RISK+'</b> 风险</div>'
+    + '</div>' : '')
+    + '</div>';
+}
+
+/* 传了商家就带上「为什么在这层」的推导,悬停可见 —— 分层规则因此是可核对的,不是黑箱 */
+function tierPill(t, m){
+  return '<span class="pill'+(m?' pill-why':'')+'"'
+       + ' style="background:'+(TIER_BG[t]||'#F2F2F5')+';color:'+(TIER_FG[t]||'var(--t2)')+'"'
+       + (m ? ' title="'+m.why+'" data-why="'+m.why+'"' : '')
+       + '>'+t+'</span>';
+}
+/* 诊断主链路只有箭头、没有转化率:和上面的连接段共用第一行,所以中线天然对齐 */
+function jarrow(){
+  return '<div class="jlink"><div class="arrow">'+icon('arrowLn',26)+'</div></div>';
+}
+function secTitle(ic, txt, hint){
+  return '<div class="sec-title">'+icon(ic,16)+txt
+       + (hint ? '<span class="hint">'+hint+'</span>' : '') + '</div>';
+}
+
+/* =========================================================
+   页2 · 商家管理
+   ========================================================= */
+function pageMerchants(){
+  const f = state.tier;
+  /* 两个筛选条件叠加:tab 选生命周期段(纵轴),芯片选健康度线以下(横轴)。
+     这正说明分层没有吞掉风险信息——风险被拆成独立一根轴,可以单独用,也可以交叉用。 */
+  const riskOnly = !!state.riskOnly;
+  const hitRisk  = function(m){ return m.health < HEALTH_RISK; };
+  const inTier   = function(m,t){ return (t==='全部' || m.tier===t) && (!riskOnly || hitRisk(m)); };
+  const list = MERCHANTS.filter(function(m){ return inTier(m, f); });
+
+  let tabs = ['全部'].concat(TIERS).map(function(t){
+    const n = MERCHANTS.filter(function(m){ return inTier(m,t); }).length;
+    return '<button class="tab'+(t===f?' on':'')+'"'
+         + (TIER_FULL[t] ? ' title="'+TIER_FULL[t]+'"' : '')
+         + ' onclick="setTier(\''+t+'\')">'+t
+         + '<span class="n">'+n+'</span></button>';
+  }).join('');
+  /* 芯片计数按当前选中的生命周期段算,这样上面挂的数字和下面的行数永远对得上。
+     **始终渲染**,哪怕这一层一个风险商家都没有 —— 控件忽隐忽现会让人以为筛选功能没了;
+     计数为 0 时只是变淡,点下去会给出「这一层整体健康」的空态,本身就是个结论。 */
+  const riskN = MERCHANTS.filter(function(m){ return (f==='全部' || m.tier===f) && hitRisk(m); }).length;
+  tabs += '<button class="riskchip'+(riskOnly?' on':'')+(riskN?'':' zero')+'"'
+        + ' title="筛出状态为「风险」的商家(健康度 &lt;'+HEALTH_RISK+')。'
+        + '健康度是独立于生命周期的第二根轴,可以和任意分层交叉'
+        + (riskN ? '' : ';当前分层下没有风险商家')+'"'
+        + ' onclick="toggleRisk()">'+icon('alert',13)
+        + '<span>只看风险 · 健康度 &lt;'+HEALTH_RISK+'</span><span class="n">'+riskN+'</span></button>';
+
+  /* 顶部看板跟随选中的分层:
+     全部 → 各分层的消耗分布;选中某一层 → 该层内部按商家的消耗结构(TOP 5 + 其他) */
+  let boardBar, boardLeg, boardTitle, boardDesc;
+
+  if(f === '全部'){
+    /* 看板的口径跟着筛选走,所以条上每一段的宽度和下面图例、和列表行数始终同一套数 */
+    const totalSpend = list.reduce(function(s,m){return s+m.spend;},0);
+    const byTier = TIERS.map(function(t){
+      const arr = list.filter(function(m){return m.tier===t;});
+      const sp = arr.reduce(function(s,m){return s+m.spend;},0);
+      return { t:t, n:arr.length, spend:sp, pct: totalSpend ? sp/totalSpend*100 : 0 };
+    });
+    boardBar = byTier.map(function(b){
+      return '<i style="width:'+b.pct.toFixed(1)+'%;background:'+TIER_COLOR[b.t]+'" title="'+b.t+'"></i>';
+    }).join('');
+    boardLeg = byTier.map(function(b){
+      return '<span class="seg"><span class="d" style="background:'+TIER_COLOR[b.t]+'"></span>'+b.t
+           + ' <b>'+b.n+'</b> 家 · 消耗 <b>'+b.spend.toFixed(1)+'</b> 万 · 占比 <b>'+b.pct.toFixed(1)+'%</b></span>';
+    }).join('');
+    boardTitle = '客户分层与消耗结构';
+    boardDesc  = '按生命周期分四段 · 互斥且穷尽 · 点击分层标签下钻'
+               + (riskOnly ? ' · <b style="color:var(--red-600)">已筛：风险商家（健康度 &lt;'+HEALTH_RISK+'）</b>' : '');
+  } else {
+    const arr = list.slice().sort(function(a,b){ return b.spend-a.spend; });
+    const total = arr.reduce(function(s,m){ return s+m.spend; }, 0);
+    const top   = arr.slice(0, TIER_TOP_N);
+    const rest  = arr.slice(TIER_TOP_N);
+    const restSpend = rest.reduce(function(s,m){ return s+m.spend; }, 0);
+    const ramp  = TIER_RAMP[f] || TIER_RAMP['新客期'];
+
+    const segs = top.map(function(m,i){
+      return { name:m.name, spend:m.spend, pct:m.spend/total*100,
+               color:ramp[i] || ramp[TIER_TOP_N-1], mch:m.name };
+    });
+    if(rest.length){
+      segs.push({ name:'其他 '+rest.length+' 家', spend:restSpend,
+                  pct:restSpend/total*100, color:SEG_OTHER });
+    }
+
+    boardBar = segs.map(function(s){
+      return '<i style="width:'+s.pct.toFixed(1)+'%;background:'+s.color+'" title="'+s.name+'"></i>';
+    }).join('');
+    /* TOP 5 可点击直接下钻到该商家的诊断;「其他」是聚合项,不可点 */
+    boardLeg = segs.map(function(s){
+      return '<span class="seg'+(s.mch?' click':'')+'"'
+           + (s.mch ? ' onclick="openMerchant(\''+s.mch+'\')"' : '') + '>'
+           + '<span class="d" style="background:'+s.color+'"></span>'+s.name
+           + ' · 消耗 <b>'+s.spend.toFixed(1)+'</b> 万 · 占比 <b>'+s.pct.toFixed(1)+'%</b></span>';
+    }).join('');
+    boardTitle = f + ' 消耗结构';
+    boardDesc  = '该层消耗 TOP '+top.length+' 商家'
+               + (rest.length ? ',其余 '+rest.length+' 家归入「其他」' : '')
+               + ' · 点击可查看该商家诊断'
+               + (riskOnly ? ' · <b style="color:var(--red-600)">已筛：风险商家（健康度 &lt;'+HEALTH_RISK+'）</b>' : '');
+  }
+
+  const rows = list.map(function(m){
+    const st    = m.health>=HEALTH_OK?'健康':m.health>=HEALTH_RISK?'关注':'风险';
+    const stCls = m.health>=HEALTH_OK?'green':m.health>=HEALTH_RISK?'orange':'red';
+    return '<tr class="cursor" onclick="openMerchant(\''+m.name+'\')">'
+      + '<td><div class="mname">'+m.name+'</div></td>'
+      + '<td class="hide-sm">'+tierPill(m.tier, m)+'</td>'
+      + '<td>'+healthBar(m.health, m.hw)+'</td>'
+      + '<td class="num">'+m.spend.toFixed(1)+'<span class="ghost"> 万</span></td>'
+      + '<td class="num">'+m.roas.toFixed(2)+'</td>'
+      + '<td class="num hide-sm" style="color:'+(m.mom>=0?'var(--green)':'var(--red)')+'">'
+      +   (m.mom>=0?'+':'')+m.mom.toFixed(1)+'%</td>'
+      + '<td><span class="pill '+stCls+'">'+st+'</span></td>'
+      + '<td><button class="btn-mini">诊断 →</button></td>'
+      + '</tr>';
+  }).join('')
+  /* 空态是**有信息量的**:这一层筛不出风险商家本身就是结论,不该只是留白 */
+  || '<tr><td colspan="8" style="text-align:center;padding:26px 12px;color:var(--t3);font-size:12.5px">'
+   + '当前筛选下没有商家 —— 这一层没有状态为「风险」的商家(健康度均 ≥'+HEALTH_RISK+'),说明处在该阶段的商家整体健康,'
+   + '不需要个案介入。</td></tr>';
+
+  return ''
+  + '<div class="tabs">'+tabs+'</div>'
+  + '<div class="card"><div class="card-h">'+icon('layers',16)+'<h3>'+boardTitle+'</h3>'
+  +   '<span class="desc">'+boardDesc+'</span></div>'
+  +   '<div class="card-b"><div class="tierbar">'+boardBar+'</div><div class="tierleg">'+boardLeg+'</div>'
+  +   tierNote() + healthNote() + '</div></div>'
+  + secTitle('store','商家列表','点击任一行进入该商家诊断')
+  + '<div class="card"><div class="card-b"><div class="tbl-wrap"><table class="tbl">'
+  +   '<thead><tr><th>商家</th><th class="hide-sm">分层</th><th>健康度</th><th>月消耗</th>'
+  +   '<th>ROAS</th><th class="hide-sm">环比</th><th>状态</th><th></th></tr></thead>'
+  +   '<tbody>'+rows+'</tbody>'
+  + '</table></div></div></div>'
+  + '<div class="scopenote">'+icon('info',14)
+  +   '<div><div>口径说明 · 本页是<b>分层管理下的重点商家池,共 '+MERCHANTS.length+' 家</b>。'
+  +     '按消耗量级与经营健康度筛出后进入日常单个跟进的名单,只有进入这个池子的商家才走'
+  +     '「诊断 → 处置 → 沉淀」的完整流程。</div>'
+  +   '<div class="mt">平台在投商家共 <b>'+DATA.platform.activeMch.toLocaleString()+' 家</b>'
+  +     '(见商业化大盘「活跃投放商家」),其余商家按分层规则做<b>批量运营</b>,不占用个案运营人力。'
+  +     '两个数字的分母不同,本页消耗合计不可与大盘消耗直接相除。<br>'
+  +     '注意<b>「进池规则」与「池内分层」是两回事</b>:进池看消耗量级与健康度(决定谁值得占用个案人力),'
+  +     '进池之后按生命周期分段(决定这批商家各自处在哪一段、该用什么节奏跟)。</div></div>'
+  + '</div>';
+}
+
+/* =========================================================
+   页3 · 商家诊断
+   ========================================================= */
+const CPA_BASE = { cpm:40, ctr:2.0, cvr:5.0 };
+function cpaOf(cpm,ctr,cvr){ return cpm / (1000 * (ctr/100) * (cvr/100)); }
+
+/* ---------------------------------------------------------
+   诊断数据:三家重点商家用人工撰写的数据,其余商家按其在
+   商家管理页的指标(消耗 / ROAS / 健康度)确定性推导一份,
+   保证搜索到任意一家都能看到自洽的漏斗与结论,而非套用别人的数据。
+   --------------------------------------------------------- */
+/* 十万以下保留两位小数:入口量级小到几千的商家,一位小数会把「0.17 万」塌成「0.2 万」,
+   读者拿上两格除不出下一格,只会以为数是编的。大数照旧取整,不进位的话读起来太啰嗦。 */
+function fmtWan(v){
+  return (v >= 1000 ? Math.round(v).toLocaleString()
+        : v >= 100  ? String(Math.round(v))
+        : v >= 10   ? v.toFixed(1)
+        :             v.toFixed(2)) + ' 万';
+}
+const ROAS_BASE = { '新客期':1.95, '成长期':2.42, '成熟期':2.68, '衰退期':1.60 };
+
+function synthDiag(m){
+  const h = m.health;
+  const cpm = 52 - h * 0.18;                     // 健康度越高,拿量成本越低
+  const ctr = 1.1 + h * 0.026;
+  const cvr = 1.2 + h * 0.042;
+  const mergeR  = 0.14 + h * 0.0022;             // 两入口汇入主链路的综合转化
+  const dealR   = 0.06 + h * 0.0016;             // 进店/加购 → 成交
+  const repR    = 0.08 + h * 0.0022;             // 成交 → 30 日复购
+
+  const impWan  = m.spend * 1000 / cpm;
+  const clkWan  = impWan * ctr / 100;
+  const cartWan = clkWan * mergeR;
+  const deals   = Math.round(cartWan * 10000 * dealR);
+  const reps    = Math.round(deals * repR);
+  const ltv     = Math.round(120 + h * 3.4);
+
+  /* 健康度决定断点落在链路哪一环,而不是所有商家共用一套结论 */
+  const band = h >= 75 ? 'good' : h >= 55 ? 'mid' : h >= 45 ? 'warn' : 'bad';
+
+  const main = [
+    /* 主链路四格一律用绝对数,不混「万」—— 成交 / 复购本来就是绝对数,
+       进店/加购写「万」的话这一行会中途换单位,而且小数位一省就和下一格除不开 */
+    { ic:'cart',   name:'进店 / 加购', num:Math.round(cartWan * 10000).toLocaleString(),
+      note:'来自两个入口', flag: band === 'warn' ? '断点' : '' },
+    { ic:'deal',   name:'成交',       num:deals.toLocaleString(), note:'成交转化 '+(dealR*100).toFixed(1)+'%' },
+    { ic:'repeat', name:'复购',       num:reps.toLocaleString(),
+      note:'30 日复购 '+(repR*100).toFixed(1)+'%', flag: band === 'mid' ? '断点' : '' },
+    { ic:'ltv',    name:'LTV',        num:'¥'+ltv, note:'12 个月口径' }
+  ];
+
+  const verdict = {
+    good:'链路各环节转化均在同品类健康区间内,当前无需介入。建议维持既有投放结构,并按周更新素材以控制衰减。',
+    mid:'前端获客与成交环节表现正常,但 30 日复购率低于同品类基准,LTV 对当前出价水平的支撑不足。建议围绕留存事件优化,暂缓放量。',
+    warn:'两个入口的点击表现正常,但汇入主链路后的承接转化低于同品类基准,流失集中在落地页与商品信息一致性,建议优先排查承接环节。',
+    bad:'两个入口的点击率均显著低于同品类水平,曝光未能有效转化为点击。判断为定向覆盖与素材吸引力问题,与承接链路无关,不应通过调整出价解决。'
+  }[band];
+
+  const base = ROAS_BASE[m.tier] || 2.42;
+  const gap  = m.roas - base;
+
+  /* 两个入口的曝光 / 点击按固定比例拆分,比例和手写商家同一套结构(76/24、46/54)。
+     CTR 必须由拆分后的这两个数算出来,不能另写一个乘数 —— 写死乘数的话,
+     卡片上的「曝光」「点击」「CTR」三个数互相乘不开,细看就露馅。 */
+  const impFeed = impWan * 0.76, clkFeed = clkWan * 0.46;
+  const impSrch = impWan * 0.24, clkSrch = clkWan * 0.54;
+
+  return {
+    sector: m.sector || '美妆护肤', tier: m.tier, health: h,
+    triple: [
+      { k:'商家 ROAS', v:m.roas.toFixed(2),
+        f:'行业基准 ' + base.toFixed(2) + ' · ' + (gap >= 0.2 ? '高于基准' : gap >= -0.2 ? '与基准持平' : '低于基准'),
+        tone: gap >= -0.2 ? 'ok' : gap >= -0.8 ? 'warn' : 'bad' },
+      { k:'平台消耗', v:'¥' + m.spend.toFixed(1) + ' 万',
+        f:'环比 ' + (m.mom >= 0 ? '+' : '') + m.mom.toFixed(1) + '%',
+        tone: m.mom >= -10 ? 'ok' : m.mom >= -20 ? 'warn' : 'bad' },
+      { k:'用户负反馈', v: (0.30 + (100 - h) * 0.006).toFixed(2) + '%',
+        f:'护栏阈值 0.80% · 安全', tone:'ok' }
+    ],
+    entrances: [
+      { key:'信息流', ic:'exposure', color:'var(--orange)', bg:'var(--orange-50)',
+        exposure:fmtWan(impFeed), click:fmtWan(clkFeed),
+        ctr:(clkFeed/impFeed*100).toFixed(1)+'%', brk: band === 'bad' },
+      { key:'搜索', ic:'search', color:'var(--blue)', bg:'var(--blue-50)',
+        exposure:fmtWan(impSrch), click:fmtWan(clkSrch),
+        ctr:(clkSrch/impSrch*100).toFixed(1)+'%', brk:false }
+    ],
+    main: main,
+    mergeRate: (mergeR*100).toFixed(1) + '%',
+    verdict: verdict,
+    cpa: { cpm: Math.round(cpm), ctr: +ctr.toFixed(1), cvr: +cvr.toFixed(1) }
+  };
+}
+
+/* 分层与健康度只有 MCH_RAW 一个来源:人工写的三份诊断里不再重复这两个字段,
+   需要它们的时候从这里取。两份数据各写一遍,迟早会对不上。 */
+function diagFor(name){
+  const m = MERCHANTS.filter(function(x){ return x.name === name; })[0];
+  const d = DIAG[name] ? Object.assign({}, DIAG[name]) : (m ? synthDiag(m) : Object.assign({}, DIAG['mock案例商家']));
+  if(m){ d.tier = m.tier; d.health = m.health; }
+  return d;
+}
+
+/* =========================================================
+   打法卡沉淀 · 把一次诊断变成一张能被检索到的卡
+   ---------------------------------------------------------
+   打法卡的作用:平台运营每天处理的是个案,但同类断点会在不同商家反复出现。
+   卡片把这套处置经验从「某个人的经验」变成「可被检索、可被引用、可被复核的资产」——
+   助手回答下一次同类问题时引用的就是它,而不是每次重新推理。
+
+   链路:诊断页定位断点 → 打开沉淀弹窗(4 项已由诊断预填)→ 运营补 2 项 → 入册
+        → 卡片进入 retrieve() 的语料池 → 同样的提问立刻能命中新卡 → 引用次数 +1
+   ========================================================= */
+
+/* 断点判定 → 卡片的结构化字段。运营不需要重新描述问题,机器能推的都推出来。 */
+function breakpointOf(d){
+  const ents = (d.entrances || []).filter(function(e){ return e.brk; });
+  const cart = (d.main || []).filter(function(s){ return s.name.indexOf('进店') >= 0 && s.flag; })[0];
+  const rep  = (d.main || []).filter(function(s){ return s.name.indexOf('复购') >= 0 && s.flag; })[0];
+  /* 双入口同时出问题时用「双入口」,单入口则点名是哪一个 */
+  const many = ents.length > 1;
+  const eWord  = many ? '双入口' : (ents.length ? ents[0].key : '');
+  const eLabel = many ? '双入口' : (ents.length ? ents[0].key + '入口' : '');
+  if(ents.length && cart) return { kind:'carry',  ent:eWord,  node:cart.name };
+  if(rep)                 return { kind:'repeat', ent:'',     node:rep.name };
+  if(cart)                return { kind:'carry',  ent:'',     node:cart.name };
+  if(ents.length)         return { kind:'click',  ent:eLabel, node:'' };
+  return { kind:'none', ent:'', node:'' };
+}
+
+/* 名称 = {症状}:{动作},两段都是只读枚举。这两段是检索键,不是给人看的标题:
+   retrieve() 统计的是查询二元组在「标题+场景+策略+效果+限制+标签」里的覆盖率,
+   所以症状段必须用会出现在提问里的业务词(承接、复购、点击率),而不是商家名或日期。 */
+const FG_SYM = {
+  carry : ['{e}承接环节转化偏低', '{e}进店 / 加购转化率低于同品类', '落地页承接转化不达预期'],
+  click : ['{e}点击率不足', '曝光到点击的转化效率偏低', '素材点击效率低于同品类'],
+  repeat: ['30 日复购率低于同品类基准', 'LTV 支撑不住当前出价', '复购事件回传后仍无起色'],
+  none  : ['链路各环节转化达标', '投放结构稳定无需介入']
+};
+const FG_ACT = {
+  carry : ['按落地页与商品信息一致性排查', '重建落地页与商品的承接链路', '先做素材与落地页的对照实验'],
+  click : ['放宽定向覆盖并轮换素材', '提高素材更新频率并扩大人群包', '先跑量再逐步收敛定向'],
+  repeat: ['按留存事件优化出价目标', '把优化事件前置到首单后 7 日', '先控预算等待复购样本'],
+  none  : ['维持既有投放结构', '维持结构并按周更新素材']
+};
+function fgFill(tpl, e){ return tpl.replace('{e}', e || '主链路'); }
+
+function forgeCtx(){
+  const name = state.merchant;
+  const d    = diagFor(name);
+  const m    = MERCHANTS.filter(function(x){ return x.name === name; })[0] || {};
+  const bp   = breakpointOf(d);
+  const syms = FG_SYM[bp.kind].map(function(s){ return fgFill(s, bp.ent); });
+  return {
+    name:name, d:d, m:m, bp:bp, syms:syms, acts:FG_ACT[bp.kind],
+    sector: d.sector || m.sector || '美妆护肤',
+    tier:   d.tier   || m.tier   || '成长期'
+  };
+}
+
+/* 适用场景:断点 + 该类商家在诊断里已有的量化位置,让复用者能判断「像我」还是「不像我」 */
+function forgeScene(x, sym){
+  const roas = (typeof x.m.roas === 'number') ? x.m.roas.toFixed(2) : null;
+  const base = ROAS_BASE[x.tier] || 2.42;
+  return x.sector + '类目 · ' + x.tier + '商家出现「' + sym + '」；'
+    + (roas ? '商家 ROAS ' + roas + '（同层级基准 ' + base.toFixed(2) + '），' : '')
+    + (typeof x.m.spend === 'number' ? '月消耗 ' + x.m.spend.toFixed(1) + ' 万' : '处于同类业务阶段');
+}
+
+/* 策略设置:诊断结论里那句「建议…」就是处方,直接成句带入,运营再补执行细节 */
+function forgeSetup(d, act){
+  const adv = d.verdict.split('。').filter(function(s){ return s.indexOf('建议') >= 0; })[0];
+  if(adv) return adv.trim() + '。';
+  return '按「' + act + '」处置,先在小流量组验证,方向确认后再放量。';
+}
+
+/* 主指标:断点落在哪一环,就盯哪一环的读数。
+   处置登记和打法卡都用它,保证「盯的指标」和「诊断出的断点」永远是一回事。 */
+function metricOf(d, bp){
+  if(bp.kind === 'click')
+    return { name:'入口点击率 CTR',
+             base:(d.entrances || []).map(function(e){ return e.key + ' ' + e.ctr; }).join(' / ') };
+  if(bp.kind === 'repeat'){
+    const r = (d.main || []).filter(function(s){ return s.name.indexOf('复购') >= 0; })[0];
+    return { name:'30 日复购率', base: r ? String(r.note).replace('30 日复购 ', '') : '—' };
+  }
+  return { name:'两入口合并进店转化率', base: d.mergeRate };
+}
+
+/* 断点类型 → 当前确实落在这一环上的商家,以及这批商家的规模。
+   一张卡值不值得被复用、一条需求值不值得提,靠的都是这个数 ——
+   而且它是**实时算的**:商家数据一变,受影响的范围跟着变,
+   所以卡片和需求都不会随着时间推移变成一份不知道还能给谁用的旧文档。
+   打法卡和产品需求共用这一个函数,两边的「影响面」因此永远对得上。 */
+function kindImpact(kind){
+  if(!kind || kind === 'none') return { names:[], n:0, spend:0 };
+  const ms = MERCHANTS.filter(function(m){
+    return breakpointOf(diagFor(m.name)).kind === kind;
+  }).sort(function(a,b){ return b.spend - a.spend; });
+  return {
+    names: ms.map(function(m){ return m.name; }),
+    n: ms.length,
+    spend: ms.reduce(function(s,m){ return s + m.spend; }, 0)
+  };
+}
+function merchantsForKind(kind){ return kindImpact(kind).names; }
+function needImpactOf(n){ return kindImpact(n.bp); }
+
+/* 诊断页的回执:只有已经排期或上线的需求才对外出现。
+   一条需求最多显示两条回执,多了会把断点判定本身挤下去。 */
+function needsForKind(kind){
+  if(!kind || kind === 'none') return [];
+  return NEEDS.filter(function(n){
+    return n.bp === kind && NEED_SHOW.indexOf(n.status) >= 0;
+  }).slice(0, 2);
+}
+function needStrip(kind){
+  const ns = needsForKind(kind);
+  if(!ns.length) return '';
+  return ns.map(function(n){
+    const imp = needImpactOf(n);
+    return '<div class="needstrip">' + icon('need',15)
+      + '<span><span class="lb">已有产品方案</span> · <b>' + n.id + '</b>「' + n.title + '」'
+      +   ' · 状态 <b>' + n.status + '</b> · 覆盖 <b>' + imp.n + '</b> 家 / ¥'
+      +   imp.spend.toFixed(1) + ' 万</span>'
+      + '<span class="go" onclick="goNeeds()">查看 →</span>'
+      + '</div>';
+  }).join('');
+}
+
+/* 该不该提需求,页面先算一遍,不靠运营拍脑袋:
+     (a) 同类断点已经在全池重复出现 → 不是单家的操作问题
+     (b) 这家登记过的处置全部未达标 → 商家侧的动作已经试过
+   两条都不成立时按钮仍然在,只是理由降级成「由你判断」——不硬推。 */
+const NEED_CROWD = 3;
+function needEvidence(mch){
+  const bp  = breakpointOf(diagFor(mch));
+  const imp = kindImpact(bp.kind);
+  const done = ACTIONS.filter(function(a){ return a.mch === mch && a.status !== '观察中'; });
+  const fail = done.filter(function(a){ return a.status === '未达标'; });
+  const tried = done.length > 0 && fail.length === done.length;
+  const reasons = [];
+  if(imp.n >= NEED_CROWD)
+    reasons.push('全池 ' + imp.n + ' 家同类断点 · 合计月消耗 ¥' + imp.spend.toFixed(1)
+               + ' 万 —— 已在跨商家重复出现，不是单家的操作问题');
+  if(tried)
+    reasons.push('这家 ' + done.length + ' 条处置全部未达标 —— 商家侧动作已经试过，问题多半不在商家手上');
+  return { bp:bp, imp:imp, done:done.length, fail:fail.length, tried:tried,
+           reasons:reasons, suggest:reasons.length > 0 };
+}
+function toggleKind(id){
+  state.kindOpen[id] = !state.kindOpen[id];
+  renderShell();
+}
+function kindBlock(c){
+  if(!c.kind || c.kind === 'none') return '';
+  const ms = merchantsForKind(c.kind);
+  if(!ms.length) return '';
+  const open = !!state.kindOpen[c.id];
+  return '<div class="khits">'
+    + '<button class="hits-btn'+(open?' on':'')+'" onclick="toggleKind(\''+c.id+'\')">'
+    +   icon('target',13) + '<span>命中同类断点 <b>' + ms.length + '</b> 家</span>'
+    +   '<span class="chev">' + icon('chevDown',13) + '</span></button>'
+    + (open
+        ? '<div class="hits-list">'
+          + ms.map(function(n){
+              return '<span class="hchip" onclick="openMerchant(\''+n+'\')">'+n+'</span>';
+            }).join('')
+          + '<span class="hits-note">点商家名直接进入该商家的诊断</span></div>'
+        : '')
+    + '</div>';
+}
+
+/* 需求卡上的同一块:断点影响面 + 可以点开逐家看的名单。
+   和 kindBlock 长得一样、用的是同一个 toggleKind 和同一套 .khits 样式 ——
+   两种沉淀物结构同构,就没必要让它们看起来像两个东西。 */
+function needBlock(n){
+  const imp = needImpactOf(n);
+  if(!imp.n) return '';
+  const open = !!state.kindOpen[n.id];
+  return '<div class="khits">'
+    + '<button class="hits-btn'+(open?' on':'')+'" onclick="toggleKind(\''+n.id+'\')">'
+    +   icon('target',13) + '<span>命中同类断点 <b>' + imp.n + '</b> 家</span>'
+    +   '<span class="chev">' + icon('chevDown',13) + '</span></button>'
+    + (open
+        ? '<div class="hits-list">'
+          + imp.names.map(function(x){
+              return '<span class="hchip" onclick="openMerchant(\''+x+'\')">'+x+'</span>';
+            }).join('')
+          + '<span class="hits-note">点商家名直接进入该商家的诊断</span></div>'
+        : '')
+    + '</div>';
+}
+
+/* 效果结果:新卡是「验证中」,还没有结论,预填的只能是整改前的基线值 */
+function forgeEffect(d, bp){
+  const mt = metricOf(d, bp);
+  return '待验证 · 整改前基线:' + mt.name + ' ' + mt.base;
+}
+
+/* 标签:断点环节 + 类目 + 分层。标签命中在检索里额外加权 0.12/个 */
+function forgeTags(x, bp){
+  const t = [];
+  if(bp.ent && bp.ent !== '双入口') t.push(bp.ent);
+  t.push({ carry:'承接', click:'点击率', repeat:'复购', none:'投放' }[bp.kind]);
+  t.push('转化率');
+  if(bp.node) t.push(bp.node);
+  t.push(x.sector, x.tier);
+  /* 去重:检索里标签命中是逐个加权的,重复标签会让这张卡白白多拿权重 */
+  return t.filter(function(v, i){ return v && t.indexOf(v) === i; });
+}
+
+let FORGE = null;
+
+function openForge(){
+  const x = forgeCtx();
+  FORGE = {
+    ctx:x, bp:x.bp,
+    sym:x.syms[0], act:x.acts[0],
+    tags: forgeTags(x, x.bp)
+  };
+  const opt = function(arr, cur){
+    return arr.map(function(o){ return '<option'+(o===cur?' selected':'')+'>'+o+'</option>'; }).join('');
+  };
+  const bpText = {
+    carry : '承接链路(进店 / 加购)',
+    click : '曝光 → 点击',
+    repeat: '复购 / 留存',
+    none  : '无显著断点'
+  }[x.bp.kind];
+
+  const el = document.createElement('div');
+  el.className = 'mask';
+  el.onclick = function(e){ if(e.target === el) closeForge(); };
+  el.innerHTML = '<div class="modal fgmodal">'
+    + '<div class="modal-h">'+icon('book',18)+'<h3>沉淀为打法卡</h3>'
+    +   '<button class="x" onclick="closeForge()">✕</button></div>'
+    + '<div class="modal-b">'
+
+    + '<div class="fg-src">'+icon('pulse',15)
+    +   '<span>来源诊断 · <b>'+x.name+'</b>（'+x.sector+' · '+x.tier+'）　断点位置 · <b>'+bpText+'</b></span></div>'
+
+    + '<div class="fg-lb">名称<span class="hint">助手的检索键,只能用「症状:动作」两段式选择,不能自由输入</span></div>'
+    + '<div class="fg-name" id="fgName"></div>'
+    + '<div class="fg-compose">'
+    +   '<label class="fg-sel"><span>症状</span><select id="fgSym" onchange="forgeSyncName()">'+opt(x.syms, FORGE.sym)+'</select></label>'
+    +   '<label class="fg-sel"><span>动作</span><select id="fgAct" onchange="forgeSyncName()">'+opt(x.acts, FORGE.act)+'</select></label>'
+    + '</div>'
+
+    + '<div class="fg-lb">适用场景<span class="hint">已根据断点与该商家的量化位置填好</span></div>'
+    + '<textarea id="fgScene" rows="2">'+forgeScene(x, FORGE.sym)+'</textarea>'
+
+    + '<div class="fg-lb">策略设置<span class="hint">取自本次诊断结论里的处置建议,可补充执行细节</span></div>'
+    + '<textarea id="fgSetup" rows="2">'+forgeSetup(x.d, FORGE.act)+'</textarea>'
+
+    + '<div class="fg-lb">效果结果<span class="hint">新卡以「验证中」入册,这里先记整改前基线</span></div>'
+    + '<textarea id="fgEffect" rows="2">'+forgeEffect(x.d, x.bp)+'</textarea>'
+
+    + '<div class="fg-lb need">限制条件<span class="hint">必须填写 · 决定这张卡什么时候<strong>不</strong>适用</span></div>'
+    + '<textarea id="fgLimit" rows="2" placeholder="例如:仅适用于搜索词报告可用的账户；类目词竞争激烈时迁移速度要放慢"></textarea>'
+    + '<div class="fg-note">'+icon('info',14)
+    +   '<span>这一格机器填不了:它是助手判断「能不能安全引用这张卡」的护栏。'
+    +   '检索会命中语义相近但场景不符的卡,限制条件是唯一能拦住它们的东西。</span></div>'
+
+    + '<div class="fg-lb">标签<span class="hint">检索时命中标签额外加权</span></div>'
+    + '<div class="fg-tags">'+FORGE.tags.map(function(t){
+        return '<span class="fg-tag">'+t+'</span>'; }).join('')+'</div>'
+
+    + '<div class="fg-err" id="fgErr"></div>'
+
+    + '<div class="fg-foot">'
+    +   '<span class="fg-auto">'+icon('check',14)+'4 项已自动填好,你只需要写「效果结果」和「限制条件」</span>'
+    +   '<button class="btn-ghost" onclick="closeForge()">取消</button>'
+    +   '<button class="btn-solid" onclick="forgeSubmit()">提交沉淀</button>'
+    + '</div>'
+    + '</div></div>';
+  document.body.appendChild(el);
+  forgeSyncName();
+}
+
+function closeForge(){
+  const m = document.querySelector('.mask');
+  if(m) m.remove();
+  FORGE = null;
+}
+
+/* 两段选择实时拼成卡名,让运营看到「检索键长什么样」而不是一个抽象的标题框 */
+function forgeSyncName(){
+  if(!FORGE) return;
+  const s = document.getElementById('fgSym');
+  const a = document.getElementById('fgAct');
+  if(!s || !a) return;
+  FORGE.sym = s.value;
+  FORGE.act = a.value;
+  const el = document.getElementById('fgName');
+  if(el) el.innerHTML = '<b>' + FORGE.sym + '</b><i>:</i><b>' + FORGE.act + '</b>';
+}
+
+function nextCardId(){
+  let max = 0;
+  CARDS.forEach(function(c){
+    const m = /^C-(\d+)$/.exec(c.id);
+    if(m && +m[1] > max) max = +m[1];
+  });
+  return 'C-' + String(max + 1).padStart(3, '0');
+}
+
+function forgeSubmit(){
+  const val = function(id){ const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  const err = document.getElementById('fgErr');
+  const fail = function(msg, focusId){
+    err.innerHTML = icon('alert',14) + '<span>' + msg + '</span>';
+    err.style.display = 'flex';
+    const f = document.getElementById(focusId);
+    if(f) f.focus();
+  };
+  err.style.display = 'none';
+
+  const title = FORGE.sym + ':' + FORGE.act;
+  const limit = val('fgLimit');
+  const scene = val('fgScene');
+  const setup = val('fgSetup');
+  const effect= val('fgEffect');
+
+  /* 同名卡会让检索结果无法区分,直接拦住 */
+  if(CARDS.some(function(c){ return c.title === title; }))
+    return fail('知识库中已存在同名卡片「' + title + '」,请换一种症状或动作措辞。', 'fgSym');
+  if(!scene)  return fail('「适用场景」不能为空,复用者要靠它判断这张卡是否适用于自己。', 'fgScene');
+  if(!setup)  return fail('「策略设置」不能为空,否则卡片无法被引用。', 'fgSetup');
+  if(!limit)  return fail('「限制条件」必须填写——没有它,这张卡在场景不符时也会被检索命中并引用出去。', 'fgLimit');
+
+  const card = {
+    id: nextCardId(), title: title, status: '验证中', src: FORGE.ctx.name, mine: true,
+    scene: scene, setup: setup, effect: effect, limit: limit,
+    tags: FORGE.tags, created: KB_TODAY,
+    kind: FORGE.bp ? FORGE.bp.kind : ''   // 断点类型随卡一起存,知识库才能按类型归集受众商家
+  };
+  CARDS.unshift(card);          // 新卡置顶,沉淀完在知识库第一眼就能看到
+  saveCards();
+  /* 反向挂钩:这一步是「先登记处置、后沉淀卡片」的顺序。
+     挂上之后,到期回收达标时才知道该把这**张**卡转成「已验证」,而不是去猜最近一张。 */
+  linkCard(card.src, card.id);
+
+  closeForge();
+  state.justCreated = card.id;
+  state.kview = 'cards';
+  go('knowledge');
+}
+
+/* 沉淀完就地验证检索:用新卡自己的症状段当提问,确认助手真的能引用到它 */
+function verifyNewCard(id){
+  const c = CARDS.filter(function(x){ return x.id === id; })[0];
+  if(!c) return;
+  openDrawer();
+  ask(c.title.split(':')[0] + ',怎么排查?');
+}
+
+/* 「重置演示数据」两段式:第一次点变成确认态,4 秒内再点才真的清。
+   不用 confirm(),因为演示环境可能嵌在 iframe 里,原生弹窗会被挡掉。 */
+function armReset(btn){
+  if(btn.dataset.arm === '1'){
+    /* 克隆而不是直接 slice:slice 是浅拷贝,数组元素仍指向种子对象,
+       一旦哪里的代码改过卡片字段,重置就回不到初始值了 */
+    CARDS = CARDS_SEED.map(function(c){ return Object.assign({}, c); });
+    NEEDS = NEEDS_SEED.map(function(n){ return Object.assign({}, n); });
+    REF_LIVE = {};
+    try{
+      localStorage.removeItem(LS_CARDS); localStorage.removeItem(LS_REFS);
+      localStorage.removeItem(LS_NEEDS);
+    }catch(e){}
+    clearActions();                 // 处置记录一并清掉,否则会挂在已重置的商家上
+    state.justCreated = null;
+    state.justNeed = null;
+    renderShell();
+    return;
+  }
+  btn.dataset.arm = '1';
+  btn.classList.add('armed');
+  btn.textContent = '确认重置?再点一次';
+  setTimeout(function(){
+    if(btn.dataset.arm === '1'){
+      btn.dataset.arm = '0';
+      btn.classList.remove('armed');
+      btn.textContent = '重置演示数据';
+    }
+  }, 4000);
+}
+
+/* =========================================================
+   产品需求登记 · 诊断页的第二条出口
+   ---------------------------------------------------------
+   这个弹窗里**只有三格要人写**,而且标题和现象都已经按断点填好了。
+   影响面、关联商家、已试动作全是页面算出来的 —— 运营不需要重新描述问题,
+   要人判断的只有「该不该由平台来解决」和「期望什么能力」。
+   一条能被排期的需求,靠的就是这两样加上前面那几行证据,而不是一句抱怨。
+   ========================================================= */
+let ND = null;
+
+function openNeed(){
+  const name = state.merchant;
+  const ev   = needEvidence(name);
+  const d    = diagFor(name);
+  const bpText = {
+    carry:'承接链路（进店 / 加购）', click:'曝光 → 点击', repeat:'复购 / 留存', none:'无显著断点'
+  }[ev.bp.kind];
+  ND = { name:name, bp:ev.bp, kind: NEED_KINDDEF[ev.bp.kind] || '报表', ev:ev };
+
+  const el = document.createElement('div');
+  el.className = 'mask';
+  el.onclick = function(e){ if(e.target === el) closeNeed(); };
+  el.innerHTML = '<div class="modal fgmodal">'
+    + '<div class="modal-h">'+icon('need',18)+'<h3>提产品需求</h3>'
+    +   '<button class="x" onclick="closeNeed()">✕</button></div>'
+    + '<div class="modal-b">'
+
+    + '<div class="fg-src">'+icon('pulse',15)
+    +   '<span>来源诊断 · <b>'+name+'</b>（'+(d.sector||'')+' · '+(d.tier||'')+'）'
+    +   '　断点位置 · <b>'+bpText+'</b></span></div>'
+
+    + '<div class="fg-lb">诊断依据<span class="hint">由页面实时算出 · 决定这条需求值不值得提</span></div>'
+    + '<div class="needev">'
+    +   '<div class="ev"><span>影响面</span><b>全池 '+ev.imp.n+' 家同类断点 · 合计月消耗 ¥'
+    +     ev.imp.spend.toFixed(1)+' 万</b></div>'
+    +   '<div class="ev"><span>关联商家</span><b>'
+    +     (ev.imp.names.length ? ev.imp.names.join('、') : '—')+'</b></div>'
+    +   '<div class="ev"><span>已试动作</span><b>'
+    +     (ev.done ? ev.done+' 条处置，其中未达标 '+ev.fail+' 条' : '—')+'</b></div>'
+    +   (ev.suggest
+        ? '<div class="ev hit"><span>判定</span><b>建议提需求 —— '+ev.reasons.join('；')+'。</b></div>'
+        : '<div class="ev"><span>判定</span><b>证据不足，由你判断：'
+          + '这条断点也可能由商家动作修复，那就该走「沉淀为打法卡」。</b></div>')
+    + '</div>'
+
+    + '<div class="fg-lb">需求类型<span class="hint">'
+    +   '平台能力清单：出价 / 召回 / 质量预测 / 报表 / 回传 / 审核 / 频控</span></div>'
+    + '<div class="fg-days">'+NEED_KINDS.map(function(k){
+        return '<button type="button" class="daybtn'+(k===ND.kind?' on':'')+'"'
+             + ' onclick="pickKind(this,\''+k+'\')">'+k+'</button>';
+      }).join('')+'</div>'
+
+    + '<div class="fg-lb">需求标题<span class="hint">一行说清问题 · 已按断点填好，可改写</span></div>'
+    + '<textarea id="ndTitle" rows="1">'+NEED_TITLE[ev.bp.kind]+'</textarea>'
+
+    + '<div class="fg-lb">问题现象<span class="hint">已按断点填好 · 可补上这次诊断看到的读数</span></div>'
+    + '<textarea id="ndProblem" rows="3">'+NEED_PROBLEM[ev.bp.kind]+'</textarea>'
+
+    + '<div class="fg-lb need">期望能力<span class="hint">'
+    +   '必须填写 · 说不清要什么能力的需求，产品侧无法评估</span></div>'
+    + '<textarea id="ndAsk" rows="2" placeholder="'
+    +   '例如：把承接环节的回传时延纳入 SLA，并提供事件到达率看板"></textarea>'
+    + '<div class="fg-note">'+icon('info',14)
+    +   '<span>这一格机器填不了:它决定这条需求能不能被评估。'
+    +   '影响面 + 已试动作 + 期望能力三样齐了，才是一条可以被排期的需求。</span></div>'
+
+    + '<div class="fg-err" id="ndErr"></div>'
+    + '<div class="fg-foot">'
+    +   '<span class="fg-auto">'+icon('check',14)+'诊断依据已由页面算出，你只需要写「期望能力」</span>'
+    +   '<button class="btn-ghost" onclick="closeNeed()">取消</button>'
+    +   '<button class="btn-solid" onclick="needSubmit()">登记需求</button>'
+    + '</div></div></div>';
+  document.body.appendChild(el);
+}
+function closeNeed(){
+  const m = document.querySelector('.mask');
+  if(m) m.remove();
+  ND = null;
+}
+function pickKind(btn, k){
+  ND.kind = k;
+  Array.prototype.forEach.call(btn.parentNode.children, function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+}
+
+function needSubmit(){
+  const val = function(id){ const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  const err = document.getElementById('ndErr');
+  const fail = function(msg, focusId){
+    err.innerHTML = icon('alert',14) + '<span>' + msg + '</span>';
+    err.style.display = 'flex';
+    const f = document.getElementById(focusId);
+    if(f) f.focus();
+  };
+  err.style.display = 'none';
+
+  const title   = val('ndTitle');
+  const problem = val('ndProblem');
+  const ask     = val('ndAsk');
+
+  if(!title)   return fail('「需求标题」不能为空，产品侧靠它在一堆需求里认出这一条。', 'ndTitle');
+  if(!problem) return fail('「问题现象」不能为空，否则这条需求没有可复核的现场。', 'ndProblem');
+  if(!ask)     return fail('「期望能力」必须填写——说不清要什么能力的需求，产品侧无法评估。', 'ndAsk');
+  /* 同名需求会让清单无法区分,和打法卡用同一条规矩直接拦住 */
+  if(NEEDS.some(function(n){ return n.title === title; }))
+    return fail('已经有一条同名需求「' + title + '」，请换一种措辞。', 'ndTitle');
+
+  const need = {
+    id: nextNeedId(), title: title, status:'提案', src: ND.name, mine: true,
+    bp: ND.bp.kind, kind: ND.kind, problem: problem, ask: ask, created: KB_TODAY
+  };
+  NEEDS.unshift(need);          // 新登记置顶,入册后第一眼就能看到
+  saveNeeds();
+  closeNeed();
+  state.justNeed = need.id;
+  state.kview = 'needs';
+  go('knowledge');
+}
+
+function goNeeds(){ state.kview = 'needs'; go('knowledge'); }
+
+/* =========================================================
+   投放可持续性 · 扩量还是止损
+   ---------------------------------------------------------
+   转化链路走到 LTV 就停了,但 LTV 单独看没有意义——它必须和 CPA 相除。
+   LTV/CPA 给出「有没有放量的本钱」,断点给出「现在放量合不合适」,
+   两个维度交叉才是第 ⑨ 步(扩量或止损)真正的判据。
+   ========================================================= */
+function parseNum(s){ return parseFloat(String(s).replace(/[^0-9.]/g, '')) || 0; }
+
+function unitEcon(d, m){
+  const deals = parseNum((d.main[1] || {}).num);          // 成交单量
+  const ltv   = parseNum((d.main[3] || {}).num);          // 12 个月 LTV
+  const spend = (m && typeof m.spend === 'number') ? m.spend * 10000 : 0;
+  if(!deals || !ltv || !spend) return null;
+  const cpa   = spend / deals;                             // 与链路读数同源,不另造口径
+  const ratio = ltv / cpa;
+  const hasBrk = (d.main || []).some(function(s){ return s.flag; })
+              || (d.entrances || []).some(function(e){ return e.brk; });
+  const ok = ratio >= 3.0;                                 // 演示口径:健康线 3.0x
+  return {
+    deals:deals, ltv:ltv, spend:spend, cpa:cpa, ratio:ratio, ok:ok, hasBrk:hasBrk,
+    verdict: ok
+      ? (hasBrk ? '经济性可支撑扩量,但断点未修复,放量会放大低效消耗 —— 先修断点再放量'
+                : '经济性可支撑扩量,可按预算节奏加投')
+      : (hasBrk ? '单位经济性偏紧且存在断点 —— 先修断点,并暂缓放量'
+                : '单位经济性偏紧 —— 控制放量速度,优先提复购')
+  };
+}
+
+/* =========================================================
+   处置登记与效果回填
+   ---------------------------------------------------------
+   诊断给出结论之后,运营真实要做的是三步:记下要改什么 → 定观察指标和期限 → 到期回收结果。
+   之前的版本把这三步漏掉了,所以「诊断 → 扩量/止损 → 复盘沉淀」在页面上是断的。
+   这一层把断点接上,并让打法卡能在达标时从「验证中」转「已验证」。
+   ========================================================= */
+const LS_ACTIONS = 'xhs_crm_actions_v1';
+let ACTIONS = (function(){
+  const a = lsGet(LS_ACTIONS);
+  return Array.isArray(a) ? a : [];
+})();
+function saveActions(){ lsSet(LS_ACTIONS, ACTIONS); }
+
+function addDays(iso, n){
+  const p = iso.split('-').map(Number);
+  const t = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+  t.setUTCDate(t.getUTCDate() + n);
+  return t.toISOString().slice(0, 10);
+}
+/* 演示口径:以 KB_TODAY 为当期,保证每次打开看到的剩余天数一致 */
+function dueOf(a){ return addDays(a.start, a.days); }
+function daysLeftOf(a){
+  const ms = new Date(dueOf(a) + 'T00:00:00Z') - new Date(KB_TODAY + 'T00:00:00Z');
+  return Math.round(ms / 86400000);
+}
+function openActionOf(mch){
+  return ACTIONS.filter(function(a){ return a.mch === mch && a.status === '观察中'; })[0] || null;
+}
+
+/* 负责人只认工号(user N),不写姓名:这是内部工作台,名单会变、会离职,
+   工号才是能一直对得上的键。下拉里顺带报在手条数,避免把处置都堆给同一个人。 */
+const OPS = ['user 1','user 2','user 3','user 4','user 5'];
+function opsLoad(u){
+  return ACTIONS.filter(function(a){ return a.owner === u && a.status === '观察中'; }).length;
+}
+function opsOptions(cur){
+  return OPS.map(function(u){
+    const n = opsLoad(u);
+    return '<option value="'+u+'"'+(u===cur?' selected':'')+'>'+u
+         + '（'+(n ? '在手 '+n+' 条' : '空闲')+'）</option>';
+  }).join('');
+}
+/* 默认派给手上最少的那个人,而不是永远默认第一个——否则派单会天然堆在 user 1 身上 */
+function opsDefault(){
+  return OPS.slice().sort(function(a,b){ return opsLoad(a) - opsLoad(b); })[0];
+}
+function latestCardOf(mch){
+  const mine = CARDS.filter(function(c){ return c.mine && c.src === mch; });
+  return mine.length ? mine[0] : null;   // CARDS 新卡置顶,取到的是最近一张
+}
+/* 处置与卡片互相挂钩:达标时才知道该把哪张卡转成「已验证」 */
+function linkCard(mch, id){
+  ACTIONS.forEach(function(a){ if(a.mch === mch && a.status === '观察中') a.cardId = id; });
+  saveActions();
+}
+
+let ACT = null;   // 当前登记弹窗的草稿
+
+function openAction(){
+  const name = state.merchant;
+  const d    = diagFor(name);
+  const m    = MERCHANTS.filter(function(x){ return x.name === name; })[0] || {};
+  const bp   = breakpointOf(d);
+  const mt   = metricOf(d, bp);
+  const ec   = unitEcon(d, m);
+  const card = latestCardOf(name);
+  ACT = { name:name, d:d, m:m, bp:bp, mt:mt, ec:ec };
+
+  const el = document.createElement('div');
+  el.className = 'mask';
+  el.onclick = function(e){ if(e.target === el) closeAction(); };
+  el.innerHTML = '<div class="modal fgmodal">'
+    + '<div class="modal-h">'+icon('target',18)+'<h3>登记处置</h3>'
+    +   '<button class="x" onclick="closeAction()">✕</button></div>'
+    + '<div class="modal-b">'
+    + '<div class="fg-src">'+icon('pulse',15)
+    +   '<span>来源诊断 · <b>'+name+'</b>　断点位置 · <b>'+ mt.name +'</b>'
+    +   (ec ? '　LTV/CPA · <b>'+ec.ratio.toFixed(1)+'x</b>' : '') + '</span></div>'
+
+    + '<div class="fg-lb">负责人<span class="hint">用员工工号,不写姓名 · 括号里是当前在手的观察中处置数</span></div>'
+    + '<label class="fg-sel fg-sel-full"><span>工号</span>'
+    +   '<select id="acOwner">'+opsOptions(opsDefault())+'</select></label>'
+
+    + '<div class="fg-lb">处置动作<span class="hint">要做的事,取自本次诊断建议</span></div>'
+    + '<textarea id="acDo" rows="2">'+forgeSetup(d, bp.action || FG_ACT[bp.kind][0])+'</textarea>'
+
+    + '<div class="fg-lb">主指标<span class="hint">到期时拿它判达标</span></div>'
+    + '<div class="fg-pair">'
+    +   '<label class="fg-sel"><span>指标</span><input id="acMetric" value="'+mt.name+'"></label>'
+    +   '<label class="fg-sel"><span>处置前</span><input id="acBase" value="'+mt.base+'"></label>'
+    + '</div>'
+
+    + '<div class="fg-lb need">目标值<span class="hint">必须填写 · 没有承诺就没有达标可言</span></div>'
+    + '<textarea id="acTarget" rows="1" placeholder="只填目标值,例如 30.0%(比处置前 +3.0pt)"></textarea>'
+
+    + '<div class="fg-lb">护栏指标<span class="hint">主指标变好的同时不能被牺牲的东西</span></div>'
+    + '<textarea id="acGuard" rows="1">用户负反馈率 ≤ 0.80%</textarea>'
+
+    + '<div class="fg-lb">观察期限<span class="hint">到期未回收,这条处置会一直挂在商家名下</span></div>'
+    + '<div class="fg-days">'+[7,14,30].map(function(n,i){
+        return '<button type="button" class="daybtn'+(i===1?' on':'')+'" data-d="'+n+'" onclick="pickDays(this)">'+n+' 天</button>';
+      }).join('')+'</div>'
+
+    + '<div class="fg-note">'+icon('info',14)
+    +   '<span>登记后诊断页顶部会出现一条观察中的状态条,到期在这里回填实测值。'
+    +   (card ? '本次达标会把打法卡 <b>'+card.id+'</b> 从「验证中」转成「已验证」,未达标则把原因写回它的限制条件。'
+           : '若同时把它沉淀为打法卡,达标时该卡会自动转为「已验证」。')+'</span></div>'
+
+    + '<div class="fg-err" id="acErr"></div>'
+    + '<div class="fg-foot">'
+    +   '<span class="fg-auto">'+icon('check',14)+'处置动作 / 主指标 / 护栏 / 期限已预填</span>'
+    +   '<button class="btn-ghost" onclick="closeAction()">取消</button>'
+    +   '<button class="btn-solid" onclick="submitAction()">登记并开始观察</button>'
+    + '</div></div></div>';
+  document.body.appendChild(el);
+}
+
+function closeAction(){
+  const m = document.querySelector('.mask');
+  if(m) m.remove();
+  ACT = null;
+}
+
+function pickDays(btn){
+  ACT.days = +btn.dataset.d;
+  Array.prototype.forEach.call(btn.parentNode.children, function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+}
+
+function submitAction(){
+  const val = function(id){ const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  const err = document.getElementById('acErr');
+  const target = val('acTarget');
+  if(!target){
+    err.innerHTML = icon('alert',14) + '<span>「目标值」必须填写——没有可核对的目标,到期就无法判定达标与否,这条处置会变成一句空话。</span>';
+    err.style.display = 'flex';
+    document.getElementById('acTarget').focus();
+    return;
+  }
+  /* 同一商家同时只允许一条观察中的处置,避免到期时不知道回收哪一条 */
+  if(openActionOf(ACT.name)){
+    err.innerHTML = icon('alert',14) + '<span>该商家已有一条观察中的处置,请先回收结果再登记新的。</span>';
+    err.style.display = 'flex';
+    return;
+  }
+  const id = 'A-' + String(ACTIONS.length + 1).padStart(3, '0');
+  const card = latestCardOf(ACT.name);
+  ACTIONS.push({
+    id:id, mch:ACT.name, sym:ACT.bp.kind, owner: val('acOwner') || OPS[0],
+    do: val('acDo'), metric: val('acMetric'), base: val('acBase'), target: target,
+    guard: val('acGuard'), days: ACT.days || 14, start: KB_TODAY,
+    status:'观察中', actual:'', cardId: card ? card.id : null
+  });
+  saveActions();
+  closeAction();
+  renderShell();
+}
+
+/* ---- 回收结果 ---- */
+let REC = null;
+function openRecover(id){
+  const a = ACTIONS.filter(function(x){ return x.id === id; })[0];
+  if(!a) return;
+  REC = a;
+  const card = a.cardId ? CARDS.filter(function(c){ return c.id === a.cardId; })[0] : null;
+  const el = document.createElement('div');
+  el.className = 'mask';
+  el.onclick = function(e){ if(e.target === el) closeRecover(); };
+  el.innerHTML = '<div class="modal fgmodal">'
+    + '<div class="modal-h">'+icon('check',18)+'<h3>回收处置结果 · '+a.id+'</h3>'
+    +   '<button class="x" onclick="closeRecover()">✕</button></div>'
+    + '<div class="modal-b">'
+    + '<div class="fg-src">'+icon('pulse',15)
+    +   '<span>商家 <b>'+a.mch+'</b>　负责人 <b>'+(a.owner||'—')+'</b>'
+    +   '　主指标 <b>'+a.metric+'</b>　处置前 <b>'+a.base+'</b>　目标 <b>'+a.target+'</b></span></div>'
+
+    + '<div class="fg-lb need">实测值<span class="hint">必须填写 · 回收结果就是给它一个诚实的读数</span></div>'
+    + '<textarea id="rcActual" rows="1" placeholder="例如:30.4%"></textarea>'
+
+    + '<div class="fg-lb">判定<span class="hint">达标会把关联打法卡转为「已验证」;未达标会把原因写回它的限制条件</span></div>'
+    + '<div class="fg-days">'
+    +   '<button type="button" class="daybtn on" data-v="达标" onclick="pickJudge(this)">达标</button>'
+    +   '<button type="button" class="daybtn" data-v="未达标" onclick="pickJudge(this)">未达标</button>'
+    + '</div>'
+
+    + '<div class="fg-lb">结论<span class="hint">可选 · 写进卡片效果结果的一段话</span></div>'
+    + '<textarea id="rcNote" rows="2" placeholder="例如:落地页改版后 14 日内进店转化率回到 30.4%,泛词占比未反弹"></textarea>'
+
+    + (card ? '<div class="fg-note">'+icon('book',14)
+        + '<span>关联打法卡 <b>'+card.id+'「'+card.title+'」</b> 当前状态「'+card.status+'」。</span></div>' : '')
+
+    + '<div class="fg-err" id="rcErr"></div>'
+    + '<div class="fg-foot">'
+    +   '<span class="fg-auto">'+icon('check',14)+'到期 '+dueOf(a)+' · 观察 '+a.days+' 天</span>'
+    +   '<button class="btn-ghost" onclick="closeRecover()">取消</button>'
+    +   '<button class="btn-solid" onclick="submitRecover()">提交并归档</button>'
+    + '</div></div></div>';
+  document.body.appendChild(el);
+  REC.judge = '达标';
+}
+
+function closeRecover(){
+  const m = document.querySelector('.mask');
+  if(m) m.remove();
+  REC = null;
+}
+
+function pickJudge(btn){
+  REC.judge = btn.dataset.v;
+  Array.prototype.forEach.call(btn.parentNode.children, function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+}
+
+function submitRecover(){
+  const actual = (document.getElementById('rcActual').value || '').trim();
+  const err = document.getElementById('rcErr');
+  if(!actual){
+    err.innerHTML = icon('alert',14) + '<span>「实测值」必须填写——只想结束观察而不记录结果的话,这条处置对知识库没有任何贡献。</span>';
+    err.style.display = 'flex';
+    document.getElementById('rcActual').focus();
+    return;
+  }
+  const a = REC;
+  const note = (document.getElementById('rcNote').value || '').trim();
+  a.actual = actual;
+  a.status = a.judge;
+  a.closed = KB_TODAY;
+
+  /* 回填打法卡:这是知识库真正「反哺」的那一步——卡从假设变成有结论的经验 */
+  const card = a.cardId ? CARDS.filter(function(c){ return c.id === a.cardId; })[0] : null;
+  if(card){
+    if(a.judge === '达标'){
+      card.status = '已验证';
+      card.effect = a.base + ' → ' + actual + ',达标(' + a.metric + ',观察 ' + a.days + ' 天)'
+                  + (note ? '。' + note : '');
+    } else {
+      /* 未达标不改状态,但把这次的条件写进限制条件——这正是「什么时候不适用」的证据 */
+      card.limit = card.limit + ' 【' + KB_TODAY + ' 回收:' + a.metric + ' 实测 ' + actual
+                 + ',目标 ' + a.target + ',未达标' + (note ? '(' + note + ')' : '') + '。】';
+    }
+    saveCards();
+  }
+  saveActions();
+  closeRecover();
+  renderShell();
+}
+
+/* 演示数据一键回到初始:处置记录也要一起清,否则会挂在已重置的商家上 */
+function clearActions(){
+  ACTIONS = [];
+  try{ localStorage.removeItem(LS_ACTIONS); }catch(e){}
+}
+
+function pageDiagnosis(){
+  const name = state.merchant;
+  const d = diagFor(name);
+
+  /* 头部 —— 顺带回答「这家在分层里排第几、同层还有谁跟它一样」,
+     诊断页因此不再是单行道,能回到商家管理里的相对位置 */
+  const bp  = breakpointOf(d);
+  /* 第二条出口的判据:影响面 + 已试动作。页面先算一遍,按钮据此决定要不要给「建议」标记 */
+  const ev  = needEvidence(name);
+  const peers = MERCHANTS.filter(function(m){ return m.tier === d.tier; })
+                         .sort(function(a,b){ return b.spend - a.spend; });
+  const rank  = peers.map(function(m){ return m.name; }).indexOf(name) + 1;
+  const twin  = peers.filter(function(m){
+    return m.name !== name && breakpointOf(diagFor(m.name)).kind === bp.kind;
+  }).length;
+  const ec = unitEcon(d, MERCHANTS.filter(function(x){ return x.name === name; })[0]);
+
+  const head = '<div class="card"><div class="card-b" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+    + '<div style="display:flex;align-items:center;gap:12px;min-width:0">'
+    +   '<div class="brand-mark" style="width:42px;height:42px;border-radius:14px;flex:0 0 42px">'+icon('store',20)+'</div>'
+    +   '<div style="min-width:0"><div style="font-size:16px;font-weight:700">'+name+'</div>'
+    +   '<div style="font-size:12px;color:var(--t3);margin-top:3px">'+d.sector+' · '+d.tier
+    +     (rank ? ' · <span class="lnk" onclick="state.tier=\''+d.tier+'\';go(\'merchants\')">该层消耗第 '+rank+' / '+peers.length+' 位</span>' : '')
+    +     (twin ? ' · 同层另有 <b>'+twin+'</b> 家同类断点' : '')
+    +   '</div></div>'
+    + '</div>'
+    + '<div style="margin-left:auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+    +   '<div><div style="font-size:11.5px;color:var(--t3);margin-bottom:4px">商家健康度</div>'
+    +   healthBar(d.health, (mchOf(name)||{}).hw)+'</div>'
+    +   '<button class="btn-ghost" onclick="focusMerchantSearch()">切换商家</button>'
+    + '</div></div></div>';
+
+  /* 三方价值 */
+  const triple = d.triple.map(function(t){
+    const col = t.tone==='ok' ? 'var(--green)' : t.tone==='warn' ? '#D97A00' : 'var(--red)';
+    return '<div class="tcard"><div class="hd"><span class="chip" style="background:#F4F4F7;color:'+col+'">'
+      + icon(t.tone==='ok'?'shield':t.tone==='warn'?'pulse':'alert',13)+'</span>'+t.k+'</div>'
+      + '<div class="big" style="color:'+col+'">'+t.v+'</div>'
+      + '<div class="fine">'+t.f+'</div></div>';
+  }).join('');
+
+  /* 双入口 */
+  const ent = d.entrances.map(function(e){
+    const desc = ENT_DESC[e.key];
+    return '<div class="ecard'+(e.brk?' brk':'')+'">'
+      + '<div class="t"><span class="chip" style="background:'+e.bg+';color:'+e.color+'">'+icon(e.ic,13)+'</span>'
+      + '<span class="ent-nm"'+(desc?' title="'+desc+'"':'')+'>'+e.key
+      +   (desc ? '<span class="ent-info">'+icon('info',12)+'</span>' : '')+'</span>'
+      + (e.brk?'<span class="badge" title="本次断点的损失主要来自这个入口进来的流量">断点入口</span>':'')
+      + '</div>'
+      + '<div class="row"><span class="k">曝光</span><b>'+e.exposure+'</b></div>'
+      + '<div class="row"><span class="k">点击</span><b>'+e.click+'</b></div>'
+      + '<div class="row"><span class="k">CTR</span><b>'+e.ctr+'</b></div>'
+      + '</div>';
+  }).join('');
+
+  /* 主链路 */
+  const main = d.main.map(function(s,i){
+    return (i ? jarrow() : '')
+      + '<div class="jstep'+(s.flag?' bad':'')+'"><div class="ico">'+icon(s.ic,20)+'</div>'
+      + '<div class="name">'+s.name+'</div><div class="num">'+s.num+'</div>'
+      + '<div class="note">'+s.note+'</div>'
+      + (s.flag ? '<span class="flag">'+s.flag+'</span>' : '')
+      + '</div>';
+  }).join('');
+
+  const c = d.cpa;
+  const sliders = [
+    { id:'sCpm', v:c.cpm, min:20, max:80, step:0.5, nm:'CPM', rng:'20 – 80 元', fmt:'num' },
+    { id:'sCtr', v:c.ctr, min:0.5, max:5, step:0.1, nm:'CTR', rng:'0.5 – 5.0 %', fmt:'pct' },
+    { id:'sCvr', v:c.cvr, min:0.5, max:8, step:0.1, nm:'CVR', rng:'0.5 – 8.0 %', fmt:'pct' }
+  ].map(function(s){
+    const shown = s.fmt==='pct' ? s.v.toFixed(1)+'%' : s.v.toFixed(1);
+    return '<div class="slider">'
+      + '<div class="top"><span class="nm">'+s.nm+'</span><span class="range">'+s.rng+'</span>'
+      + '<b id="v'+s.id.slice(1)+'">'+shown+'</b></div>'
+      + '<input type="range" id="'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step
+      + '" value="'+s.v+'" oninput="calcCpa()">'
+      + '</div>';
+  }).join('');
+
+  return ''
+  + head
+  + secTitle('target','三方价值读数','该商家当期的广告主回报、平台收入与用户体验')
+  + '<div class="triple">'+triple+'</div>'
+
+  + secTitle('pulse','消费者转化链路','信息流与搜索两个入口分别汇入主链路')
+  + '<div class="card"><div class="card-b">'
+  +   '<div class="duo">'+ent+'</div>'
+  +   '<div class="merge"><span class="line"></span>'
+  +     '<span>两个入口汇入主链路,综合转化率 <b style="color:var(--red)">'+d.mergeRate+'</b></span>'
+  +     '<span class="line"></span></div>'
+  +   '<div class="journey" style="margin-top:14px">'+main+'</div>'
+  +   '<div class="hr"></div>'
+  +   '<div class="callout '+(d.main.some(function(s){return s.flag;})?'warn':'ok')+'">'
+  +     icon('alert',16)+'<div><b>断点判定：</b>'+d.verdict+'</div>'
+  +   '</div>'
+
+  /* 投放可持续性 —— 链路末端 LTV 和 CPA 相除,给出扩量/止损的第一个维度 */
+  +   (ec ? '<div class="econ'+(ec.ok?' ok':' tight')+'">'
+      + '<div class="ec-h"><span class="k">'+icon('coin',15)+'投放可持续性</span>'
+      +   '<span class="pill '+(ec.ok?'green':'red')+'">'+(ec.ok?'经济性达标':'经济性偏紧')+'</span></div>'
+      + '<div class="ec-b">'
+      +   '<div class="ec-fig"><span class="n">'+ec.ratio.toFixed(1)+'<small>×</small></span>'
+      +     '<span class="u">LTV / CPA</span></div>'
+      +   '<div class="ec-eq">¥'+Math.round(ec.ltv)+'　÷　¥'+ec.cpa.toFixed(1)+'　=　'+ec.ratio.toFixed(1)+'×'
+      +     '<em>健康线 3.0× · 12 个月 LTV ÷ 当期 CPA('+ec.deals.toLocaleString()+' 单成交摊出)</em></div>'
+      + '</div>'
+      + '<div class="ec-v">'+icon('target',15)+'<span><b>扩量判断</b>'+ec.verdict+'</span></div>'
+      + '</div>' : '')
+
+  /* 处置状态条:登记过就在顶部常驻,到期回收 —— 这是第 ⑨ 步落在页面上的容器 */
+  +   (function(){
+        const a = openActionOf(name);
+        if(!a) return '';
+        const left = daysLeftOf(a);
+        const card = a.cardId ? CARDS.filter(function(c){ return c.id === a.cardId; })[0] : null;
+        return '<div class="actbar'+(left<=0?' due':'')+'">'
+          + '<div class="ab-h"><span class="pill '+(left<=0?'orange':'blue')+'">'
+          +   (left>0 ? '观察中 · 剩 '+left+' 天' : '已到期 · 待回收')+'</span>'
+          + '<span class="ab-id">'+a.id+'</span>'
+          + (a.owner ? '<span class="ab-owner">'+icon('users',12)+a.owner+'</span>' : '')
+          + '<span class="ab-due">到期 '+dueOf(a)+' · 观察 '+a.days+' 天</span></div>'
+          + '<div class="ab-b"><div class="ab-do">'+a.do+'</div>'
+          +   '<div class="ab-m"><span>'+a.metric+'</span><b>'+a.base+'</b><i>→</i><b class="tgt">'+a.target+'</b></div>'
+          +   '<div class="ab-g">'+icon('shield',13)+'护栏 '+a.guard
+          +     (card ? '　·　关联 '+card.id+'「'+card.status+'」' : '')+'</div></div>'
+          + '<button class="btn-solid" onclick="openRecover(\''+a.id+'\')">回收结果</button>'
+          + '</div>';
+      })()
+  +   needStrip(bp.kind)
+  +   '<div class="forge-cta">'
+  +     '<div class="tx">'+icon('book',17)
+  +       '<span><b>把这次诊断变成可执行的下一步</b>'
+  +       '<em>断点能由商家动作修复 → 沉淀为打法卡，给其他商家复用；'
+  +       '断点源于平台能力（模型 / 回传 / 审核 / 报表）→ 提产品需求，交给产品与算法。'
+  +       '登记处置用于跟踪这次整改（定指标、定目标、定期限，到期回收）。</em></span>'
+  +     '</div>'
+  +     (openActionOf(name) ? '' : '<button class="btn-ghost" onclick="openAction()">登记处置</button>')
+  +     '<button class="btn-solid" onclick="openForge()">沉淀为打法卡 →</button>'
+  +     '<button class="btn-ghost'+(ev.suggest?' sug':'')+'" onclick="openNeed()"'
+  +       (ev.suggest ? ' title="'+ev.reasons.join('；')+'"' : '')+'>'
+  +       icon('need',14)+' 提产品需求'+(ev.suggest?' · 建议':'')+'</button>'
+  +   '</div>'
+  + '</div></div>'
+
+  + secTitle('target','CPA 实时拆解','调整 CPM / CTR / CVR,观察 CPA 变化及各因子的贡献')
+  + '<div class="card"><div class="card-b"><div class="cpa-grid">'
+  +   '<div>'+sliders
+  +     '<div class="formula" id="cpaFormula" style="margin-top:14px"></div>'
+  +     '<div class="callout neutral" style="margin-top:12px">'+icon('info',16)
+  +       '<div id="cpaHint"></div></div>'
+  +   '</div>'
+  +   '<div>'
+  +     '<div class="cpanum"><span class="big" id="cpaNow">—</span><span class="unit">元 / 转化</span>'
+  +       '<span class="vs">基准 CPA<br><b id="cpaBase">—</b> 元</span></div>'
+  +     '<div class="wf" id="cpaWf"></div>'
+  +     '<div class="hr"></div>'
+  +     '<div style="font-size:12.5px;color:var(--t3);line-height:1.7">'
+  +       '调参只影响这张图的读数,不会改动商家线上投放。'
+  +       '要把它变成可复用的经验,去上方「断点判定」处沉淀为打法卡。</div>'
+  +   '</div>'
+  + '</div></div></div>';
+}
+
+function calcCpa(){
+  const el = function(id){ return document.getElementById(id); };
+  if(!el('sCpm')) return;
+  const cpm = parseFloat(el('sCpm').value);
+  const ctr = parseFloat(el('sCtr').value);
+  const cvr = parseFloat(el('sCvr').value);
+  el('vCpm').textContent = cpm.toFixed(1);
+  el('vCtr').textContent = ctr.toFixed(1)+'%';
+  el('vCvr').textContent = cvr.toFixed(1)+'%';
+
+  const b = CPA_BASE;
+  const v0 = cpaOf(b.cpm, b.ctr, b.cvr);          // 基准
+  const v1 = cpaOf(cpm,   b.ctr, b.cvr);          // 只动 CPM
+  const v2 = cpaOf(cpm,   ctr,   b.cvr);          // 再动 CTR
+  const v3 = cpaOf(cpm,   ctr,   cvr);            // 全动
+
+  el('cpaNow').textContent  = v3.toFixed(1);
+  el('cpaBase').textContent = v0.toFixed(1);
+
+  el('cpaFormula').innerHTML =
+      'CPA = CPM ÷ (1000 × CTR × CVR)<br>'
+    + '&nbsp;&nbsp;&nbsp;&nbsp;= ' + cpm.toFixed(1) + ' ÷ (1000 × ' + (ctr/100).toFixed(4)
+    +   ' × ' + (cvr/100).toFixed(4) + ')<br>'
+    + '&nbsp;&nbsp;&nbsp;&nbsp;= ' + cpm.toFixed(1) + ' ÷ ' + (1000*(ctr/100)*(cvr/100)).toFixed(4)
+    + ' = <em>' + v3.toFixed(1) + ' 元</em>';
+
+  const steps = [
+    { lab:'CPM', d:v1-v0 },
+    { lab:'CTR', d:v2-v1 },
+    { lab:'CVR', d:v3-v2 }
+  ];
+  const maxAbs = Math.max(Math.abs(v1-v0), Math.abs(v2-v1), Math.abs(v3-v2), 0.001);
+  const top = steps.reduce(function(a,s){ return Math.abs(s.d)>Math.abs(a.d)?s:a; }, steps[0]);
+
+  el('cpaWf').innerHTML =
+      '<div class="wrow head"><span>因子</span><span>对 CPA 的贡献</span>'
+    + '<span style="text-align:right">影响</span></div>'
+    + steps.map(function(s){
+        const cls = s.d>=0 ? 'p' : 'n';
+        const w = Math.abs(s.d)/maxAbs*100;
+        return '<div class="wrow"><span class="wlab">'+s.lab+'</span>'
+          + '<div class="wbar"><i class="'+cls+'" style="width:'+w.toFixed(1)+'%"></i></div>'
+          + '<span class="wval '+cls+'">'+(s.d>=0?'+':'−')+Math.abs(s.d).toFixed(1)+'</span></div>';
+      }).join('')
+    + '<div class="wrow"><span class="wlab" style="color:var(--t1)">合计</span>'
+    + '<div class="wbar"></div><span class="wval '+(v3>=v0?'p':'n')+'">'
+    + (v3>=v0?'+':'−')+Math.abs(v3-v0).toFixed(1)+'</span></div>';
+
+  const advice = {
+    CVR:'<b>CVR 是主因。</b>优先检查承接页、用户需求匹配与转化追踪，而不是仅调低出价——出价降下去只是把量一起丢掉。',
+    CPM:'<b>CPM 是主因。</b>优先看竞价环境与定向覆盖，盲目压低出价会同时失去量与竞争力。',
+    CTR:'<b>CTR 是主因。</b>优先查首屏吸引力与素材疲劳，而不是加预算——加预算只会放大低效曝光。'
+  }[top.lab];
+  el('cpaHint').innerHTML = '当前 CPA <b>' + v3.toFixed(1) + ' 元</b>，基准 <b>' + v0.toFixed(1)
+    + ' 元</b>，差 <b>' + Math.abs(v3-v0).toFixed(1) + ' 元</b>。'
+    + '影响最大的因子是 <b>' + top.lab + '</b>（' + (top.d>=0?'+':'−') + Math.abs(top.d).toFixed(1) + ' 元）。<br>'
+    + advice;
+}
+
+/* =========================================================
+   页4 · 知识库 / 打法卡
+   ========================================================= */
+function setKView(v){ state.kview = v; renderShell(); }
+
+function pageKnowledge(){
+  const v = state.kview;
+
+  /* 读数实时算出,不写死:诊断页新沉淀一张 / 新登记一条,这里立刻跟着变 */
+  const total   = CARDS.length;
+  const mineN   = CARDS.filter(function(c){ return c.mine; }).length;
+  const withRef = CARDS.filter(function(c){ return refsOf(c.id) > 0; }).length;
+  const totalRef= CARDS.reduce(function(s,c){ return s + refsOf(c.id); }, 0);
+  const pending = CARDS.filter(function(c){ return c.status !== '已验证'; }).length;
+
+  /* 产品需求侧:在建 = 已经排期或上线,也就是诊断页会出现回执的那一批 */
+  const liveN  = NEEDS.filter(function(n){ return NEED_SHOW.indexOf(n.status) >= 0; });
+  const needMine = NEEDS.filter(function(n){ return n.mine; }).length;
+  const covered = {};
+  liveN.forEach(function(n){
+    needImpactOf(n).names.forEach(function(x){ covered[x] = 1; });
+  });
+  const covNames = Object.keys(covered);
+  const covSpend = covNames.reduce(function(s,x){
+    const m = mchOf(x); return s + (m ? m.spend : 0);
+  }, 0);
+
+  /* KPI 行跟着当前 tab 走:这一页装两种沉淀物,读数就不该只有一种口径 */
+  const KPI_CARDS = [
+    { l:'打法卡总数', ic:'book',    v:total,   u:'张',
+      f: mineN ? '其中 '+mineN+' 张由诊断沉淀' : '本月新增 5 张' },
+    { l:'有引用记录', ic:'repeat',  v:withRef, u:'张',
+      f:'覆盖率 '+(withRef/total*100).toFixed(0)+'%' },
+    { l:'累计被引用', ic:'layers',  v:totalRef, u:'次', f:'按首选答案计次' },
+    { l:'待复核卡片', ic:'alert',   v:pending, u:'张',  f:'尚未产出效果结果' }
+  ];
+  const KPI_NEEDS = [
+    { l:'产品需求',  ic:'need',   v:NEEDS.length, u:'条',
+      f: needMine ? '其中 '+needMine+' 条由诊断登记' : '提案 → 评估中 → 已排期 → 已上线' },
+    { l:'方案在建',  ic:'clock',  v:liveN.length, u:'条',
+      f:'已排期或已上线,诊断页会出现回执' },
+    { l:'覆盖商家',  ic:'users',  v:covNames.length, u:'家',
+      f:'方案落地后直接受益的重点商家' },
+    { l:'覆盖月消耗', ic:'coin',  v:covSpend.toFixed(1), u:'万',
+      f:'这批商家当期合计消耗' }
+  ];
+
+  const kpis = (v==='needs' ? KPI_NEEDS : KPI_CARDS).map(function(x){
+    return '<div class="mini-kpi"><div class="l">'+icon(x.ic,14)+x.l+'</div>'
+      + '<div class="v">'+x.v+'<small>'+x.u+'</small></div><div class="f">'+x.f+'</div></div>';
+  }).join('');
+
+  /* 两种沉淀物各带一个数量,对照着看才知道这一页的重心在哪 */
+  const toggle = [['cards','打法卡',total],['needs','产品需求',NEEDS.length],['contrib','贡献者与复用',0]]
+    .map(function(t){
+      return '<button class="tab'+(state.kview===t[0]?' on':'')+'" onclick="setKView(\''+t[0]+'\')">'+t[1]
+        + (t[2] ? '<span class="n">'+t[2]+'</span>' : '')+'</button>';
+    }).join('');
+
+  let body;
+  if(v==='contrib'){
+    const bySrc = {};
+    CARDS.forEach(function(c){
+      if(!bySrc[c.src]) bySrc[c.src] = { n:0, refs:0, ids:[] };
+      bySrc[c.src].n++;
+      bySrc[c.src].refs += refsOf(c.id);
+      bySrc[c.src].ids.push(c.id);
+    });
+    const arr = Object.keys(bySrc).map(function(s){
+      return { src:s, n:bySrc[s].n, refs:bySrc[s].refs, ids:bySrc[s].ids };
+    }).sort(function(a,b){ return b.refs-a.refs; });
+    const maxRef = arr[0] ? arr[0].refs : 1;
+    body = '<div class="card"><div class="card-h">'+icon('users',16)+'<h3>贡献者与复用情况</h3>'
+      + '<span class="desc">打法卡来自谁、被复用了多少次</span></div><div class="card-b"><div class="rank">'
+      + arr.map(function(a,i){
+          return '<div class="rankrow">'
+            + '<span class="no'+(i===0?' top':'')+'">'+(i+1)+'</span>'
+            + '<span><span class="nm">'+a.src+'</span>'
+            +   '<div class="sub">'+a.ids.join(' · ')+'</div></span>'
+            + '<span class="cnt">'+a.refs+' 次引用</span>'
+            + '</div>';
+        }).join('')
+      + '</div>'
+      + '<div class="hr"></div>'
+      + '<div class="callout neutral">'+icon('info',16)
+      + '<div>贡献者可以是<b>平台运营</b>（将个别商家的个案整理成卡），也可以是<b>商家</b>在诊断流程中自行沉淀。</div></div>'
+      + '</div></div>';
+  } else if(v==='needs'){
+    /* 需求卡与打法卡同构:四个字段 + 一条可展开的商家名单 + 脚注。
+       差别只在「当前进展」—— 打法卡放「被引用 N 次」,这里放这一态对商家侧意味着什么。
+       状态只读:真实流程里它由产品 / 算法侧维护,运营提完就交出去了,页面上不给推进入口。 */
+    body = '<div class="kgrid">' + NEEDS.map(function(n){
+      const imp   = needImpactOf(n);
+      const fresh = n.id === state.justNeed;
+      return '<div class="kcard'+(fresh?' fresh':'')+'">'
+        + '<div class="kh"><h4>'+n.title+'</h4>'
+        +   '<span class="pill '+(NEED_STATUS_CLS[n.status]||'gray')+'" style="flex:0 0 auto">'
+        +   n.status+'</span></div>'
+        + '<div class="kfields">'
+        +   '<div class="kfield"><div class="lab">问题现象</div><div class="txt">'+n.problem+'</div></div>'
+        +   '<div class="kfield"><div class="lab">期望能力</div><div class="txt">'+n.ask+'</div></div>'
+        +   '<div class="kfield"><div class="lab">影响面</div><div class="txt">'
+        +     imp.n+' 家同类断点 · 合计月消耗 ¥'+imp.spend.toFixed(1)+' 万</div></div>'
+        +   '<div class="kfield"><div class="lab">当前进展</div><div class="txt">'
+        +     (NEED_PROGRESS[n.status]||n.status)+'</div></div>'
+        + '</div>'
+        + needBlock(n)
+        + '<div class="kf"><span>'+n.id+'</span><span>类型 · '+n.kind+'</span>'
+        +   '<span>来源 · '+n.src+'</span></div>'
+        + '</div>';
+    }).join('') + '</div>';
+  } else {
+    body = '<div class="kgrid">' + CARDS.map(function(c){
+      const stCls = c.status==='已验证' ? 'green' : c.status==='验证中' ? 'orange' : 'gray';
+      const fresh = c.id === state.justCreated;
+      return '<div class="kcard'+(fresh?' fresh':'')+'">'
+        + '<div class="kh"><h4>'+c.title+'</h4>'
+        +   '<span class="pill '+stCls+'" style="flex:0 0 auto">'+c.status+'</span></div>'
+        + '<div class="kfields">'
+        +   '<div class="kfield"><div class="lab">适用场景</div><div class="txt">'+c.scene+'</div></div>'
+        +   '<div class="kfield"><div class="lab">策略设置</div><div class="txt">'+c.setup+'</div></div>'
+        +   '<div class="kfield"><div class="lab">效果结果</div><div class="txt">'+c.effect+'</div></div>'
+        +   '<div class="kfield"><div class="lab">限制条件</div><div class="txt">'+c.limit+'</div></div>'
+        + '</div>'
+        + kindBlock(c)
+        + '<div class="kf"><span>'+c.id+'</span><span>来源 · '+c.src+'</span>'
+        +   '<span class="refs">被引用 '+refsOf(c.id)+' 次</span></div>'
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
+  /* 刚从诊断页沉淀完 / 登记完会落到这一页:给一条回执,把闭环当场走完,
+     而不是只弹一句成功提示。打法卡指向「用助手验证能被检索到」;
+     产品需求指向它落在状态机的哪一格、几时才会回到诊断页。 */
+  const jc = state.justCreated
+    ? CARDS.filter(function(c){ return c.id === state.justCreated; })[0] : null;
+  const jn = state.justNeed
+    ? NEEDS.filter(function(n){ return n.id === state.justNeed; })[0] : null;
+  const banner = jn ? '<div class="forge-done need">'
+    + '<span class="ic">'+icon('need',15)+'</span>'
+    + '<div class="tx"><b>已登记为产品需求 '+jn.id+'「'+jn.title+'」</b>'
+    + '<span>以「提案」入册 · 来源 '+jn.src+' · 影响 '+needImpactOf(jn).n+' 家 / ¥'
+    + needImpactOf(jn).spend.toFixed(1)+' 万。'
+    + '这条需求要从「提案」走到「已排期」，对应商家的诊断页才会出现它的回执。</span></div>'
+    + '<button class="x" title="关闭" onclick="state.justNeed=null;renderShell()">✕</button>'
+    + '</div>'
+    : (jc ? '<div class="forge-done">'
+    + '<span class="ic">'+icon('check',16)+'</span>'
+    + '<div class="tx"><b>已沉淀为打法卡 '+jc.id+'「'+jc.title+'」</b>'
+    + '<span>以「验证中」入册 · 来源 '+jc.src+' · 已进入助手的检索语料池,同义问题现在可以引用到它</span></div>'
+    + '<button class="btn-ghost" onclick="verifyNewCard(\''+jc.id+'\')">用助手验证 →</button>'
+    + '<button class="x" title="关闭" onclick="state.justCreated=null;renderShell()">✕</button>'
+    + '</div>' : '');
+
+  return ''
+  + banner
+  + '<div class="kpirow">'+kpis+'</div>'
+  + (v==='needs'
+      ? secTitle('need','产品需求库','字段:问题现象 / 期望能力 / 影响面 / 当前进展;影响面与关联商家由断点实时算出')
+      : secTitle('book','打法卡库','卡片结构:适用场景 / 策略设置 / 效果结果 / 限制条件;限制条件缺失的卡片不可复用'))
+  + '<div class="tabs">'+toggle
+  + (CARDS.some(function(c){ return c.mine; }) || NEEDS.some(function(n){ return n.mine; })
+      ? '<button class="btn-ghost danger" style="margin-left:auto" onclick="armReset(this)">重置演示数据</button>'
+      : '')
+  + '</div>'
+  + body;
+}
+
+/* =========================================================
+   运营助手 · 基于知识库的真实检索（非大模型）
+   同一问题每次结果一致、可复核，因此可被当成一条产品能力而非演示话术。
+   ========================================================= */
+const PRESETS = [
+  '搜索投放转化率下滑，怎么排查？',
+  '新商家冷启动跑不出量怎么办？',
+  '复购率低于行业基准，该从哪里改？',
+  '广告负反馈率越线了怎么处理？'
+];
+let CHAT = [];
+
+function bigrams(s){
+  const t = s.replace(/[\s，。？！、,.?!（）()「」【】:：;；·\-—]/g, '');
+  const out = [];
+  for(let i=0;i<t.length-1;i++) out.push(t.slice(i,i+2));
+  return out;
+}
+/* 简化检索：查询二元组在文档中的覆盖率 + 标签命中加权。刻意保持简单、可解释。 */
+function retrieve(q){
+  const qb = bigrams(q);
+  const qset = {}; qb.forEach(function(b){ qset[b]=1; });
+  const uniq = Object.keys(qset);
+  return CARDS.map(function(c){
+    const doc = c.title + c.scene + c.setup + c.effect + c.limit + c.tags.join('');
+    const dset = {};
+    bigrams(doc).forEach(function(b){ if(qset[b]) dset[b]=1; });
+    const cov = uniq.length ? Object.keys(dset).length/uniq.length : 0;
+    const tagHit = c.tags.filter(function(t){ return q.indexOf(t)>=0; }).length;
+    return { c:c, score: Math.min(1, cov + tagHit*0.12), cov:cov, tags:tagHit };
+  }).sort(function(a,b){ return b.score-a.score; });
+}
+function confWord(s){ return s>=0.5 ? '高' : s>=0.28 ? '中' : '低'; }
+
+/* msg = { who, html, q?, hits? } —— 明细跟着它所属的那条回答走 */
+function pushMsg(who, html, q, hits){ CHAT.push({ who:who, html:html, q:q, hits:hits }); renderChat(); }
+
+const HITS_OPEN = {};
+function toggleHits(i){
+  HITS_OPEN[i] = !HITS_OPEN[i];
+  renderChat();
+  const el = document.getElementById('hits-'+i);
+  if(el && HITS_OPEN[i]) el.scrollIntoView({ block:'nearest' });
+}
+
+function retrievalHTML(q, hits){
+  const top = hits[0];
+  return '<div style="font-size:12px;color:var(--t3);margin-bottom:9px">检索词：<b style="color:var(--t1)">'+q+'</b></div>'
+    + hits.slice(0,5).map(function(h,i){
+        const low = h.score < 0.28;
+        return '<div class="hit'+(low?' low':'')+'" onclick="go(\'knowledge\')">'
+          + '<span class="sc">'+(h.score*100).toFixed(0)+'%</span>'
+          + '<span class="nm">'+(i+1)+'. '+h.c.title+'</span>'
+          + '<span class="src">'+h.c.id+'</span></div>';
+      }).join('')
+    + '<div class="hr"></div>'
+    + '<div style="font-size:11.5px;color:var(--t3);line-height:1.7">'
+    + '匹配度 = 查询二元组在卡片文本中的覆盖率 + 标签命中加权。<br>'
+    + (top.score < 0.28
+        ? '<b style="color:var(--red-600)">最高匹配度低于 28%，判定为「知识库无覆盖」。</b>'
+        : '最高匹配度 <b style="color:var(--green)">'+(top.score*100).toFixed(0)+'%</b>，判定为「可引用」。')
+    + '</div>';
+}
+
+function renderChat(){
+  const el = document.getElementById('chatlog');
+  if(!el) return;
+  el.innerHTML = CHAT.map(function(m, i){
+    const has = m.who === 'ai' && m.hits && m.hits.length;
+    const open = !!HITS_OPEN[i];
+    return '<div class="msg '+(m.who==='me'?'me':'ai')+'">'
+      /* 用户消息不带头像:右边那条气泡本身已经说明了是谁在问,再加一个「我」是多余的 */
+      + (m.who==='me' ? '' : '<span class="av">'+icon('robot',15)+'</span>')
+      + '<div class="bub">'+m.html
+      + (has
+          ? '<button class="cite-btn'+(open?' on':'')+'" onclick="toggleHits('+i+')">'
+            + icon('search',13) + '<span>检索明细</span>'
+            + '<span class="pct">最高匹配 '+(m.hits[0].score*100).toFixed(0)+'%</span>'
+            + '<span class="cv">'+icon('chevDown',13)+'</span>'
+            + '</button>'
+            + '<div class="hitbox" id="hits-'+i+'" style="display:'+(open?'':'none')+'">'
+            +   retrievalHTML(m.q, m.hits)
+            + '</div>'
+          : '')
+      + '</div></div>';
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function askIdx(i){ ask(PRESETS[i]); }
+function askInput(){
+  const el = document.getElementById('qin');
+  if(!el || !el.value.trim()) return;
+  const q = el.value.trim();
+  el.value = '';
+  ask(q);
+}
+function ask(q){
+  pushMsg('me', q);
+  const hits = retrieve(q);
+  const top = hits[0];
+  /* 先代入当前页面的读数,再给知识库检索结果。
+     两者刻意分开呈现,这样「哪些是数据、哪些是引用」一眼可辨,可复核性不被上下文冲淡。 */
+  let html = ctxBlock();
+
+  if(top.score < 0.28){
+    html += '知识库中没有匹配度足够的打法卡（最高匹配度 <b>'+(top.score*100).toFixed(0)+'%</b>）。'
+      + '<br><br>此情况下不建议套用相近但不相关的策略。建议先以<b>小流量对照实验</b>验证判断，'
+      + '验证通过后再沉淀为新卡片。'
+      + '<span class="cite">置信度：<b>低</b> · 依据:知识库无有效覆盖</span>';
+  } else {
+    const c = top.c;
+    bumpRef(c.id);   // 真正被引用到的只有首选卡,计数回写到知识库
+    html += '针对这个问题，知识库里有 <b>'+hits.filter(function(h){return h.score>=0.28;}).length
+      + '</b> 张可引用的打法卡，最匹配的是：<br><br>'
+      + '<b>【'+c.title+'】</b><br>'
+      + '<span style="color:var(--t2)">做法：'+c.setup+'</span><br><br>'
+      + '<span style="color:var(--t2)">适用前提：'+c.scene+'</span><br>'
+      + '<span style="color:var(--red-700)">需要留意：'+c.limit+'</span>'
+      + '<span class="cite">引用：<b>'+c.id+'</b>'
+      + (function(){
+          const rest = hits.filter(function(h){ return h.score>=0.28 && h.c.id!==c.id; })
+                           .map(function(h){ return h.c.id; });
+          return rest.length ? '（同批可引用：'+rest.join('、')+'）' : '';
+        })()
+      + ' · 置信度：<b>'+confWord(top.score)+'</b> · 匹配度 '+(top.score*100).toFixed(0)+'%</span>';
+  }
+  pushMsg('ai', html, q, hits);
+}
+
+function scanAnomalies(){
+  pushMsg('me','批量筛查重点商家池的异常');
+  const bad = MERCHANTS.filter(function(m){ return m.health < HEALTH_RISK; })
+                       .sort(function(a,b){ return a.health-b.health; });
+  const lost = bad.reduce(function(s,m){ return s+m.spend; }, 0);
+  pushMsg('ai',
+    '已扫描重点商家池 <b>'+MERCHANTS.length+'</b> 家，筛出 <b>'+bad.length+'</b> 家健康度低于 '+HEALTH_RISK+'：<br><br>'
+    + bad.map(function(m){
+        return '· <b>'+m.name+'</b>（'+m.tier+'）健康度 <b style="color:var(--red-600)">'+m.health
+          + '</b> · 月消耗 '+m.spend.toFixed(1)+' 万 · ROAS '+m.roas.toFixed(2)
+          + ' · 环比 '+(m.mom>=0?'+':'')+m.mom.toFixed(1)+'%';
+      }).join('<br>')
+    + '<br><br>这 '+bad.length+' 家合计月消耗 <b>'+lost.toFixed(1)+' 万</b>，是当前最需要止损的一组。'
+    + '建议按健康度从低到高依次下钻诊断。'
+    + '<span class="cite">置信度：<b>高</b> · 依据:健康度评分模型'
+    + '（ROAS 35% · 广告负反馈率 25% · 素材驳回率 20% · 复购率 20%，四项加权，演示参数）</span>');
+}
+
+function genReport(){
+  pushMsg('me','生成本周美妆行业运营周报');
+  const spend = DATA.platform.spend, rev = DATA.platform.revenue;
+  const conv = DATA.lifecycle[0].num + ' → ' + DATA.lifecycle[1].num;
+  pushMsg('ai',
+    '<b>美妆行业 · 本周运营周报（演示）</b><br><br>'
+    + '<b>1. 大盘</b><br>平台广告消耗 '+spend+' 亿（环比 +6.2%），广告收入 '+rev+' 亿；'
+    + '活跃投放商家 '+DATA.platform.activeMch+' 家。续投率 '+DATA.platform.renewRate+'%（环比 −1.6pt），为本周重点监控指标。<br><br>'
+    + '<b>2. 首要断点</b><br>广告主生命周期中，入驻→首投转化 65.5%（'+conv+'），444 家新商家未产生有效消耗，'
+    + '对应打法卡 <b>C-002</b>。<br><br>'
+    + '<b>3. 需介入商家</b><br>'
+    + [['mock案例商家','搜索承接转化下滑'],['AAA店家','冷启动跑不出量'],['BBB店家','复购率低于基准']]
+        .map(function(p){
+          const m = mchOf(p[0]) || {};
+          return p[0]+'（'+(m.tier||'—')+'，健康度 '+(m.health!=null?m.health:'—')+'）'+p[1];
+        }).join('、')
+    + '。<br>注意 mock案例商家与 BBB店家 同处衰退期，但断点位置不同，仍不适用同一张打法卡 —— '
+    + '生命周期只回答「这家处在哪一段」，该改什么要看诊断页的断点判定。<br><br>'
+    + '<b>4. 生态护栏</b><br>CCC店家负反馈率 '+mchOf('CCC店家').negRate.toFixed(2)+'% 已越过阈值 '+NEG_LIMIT+'，需在收入与体验之间做取舍。'
+    + '<span class="cite">置信度：<b>中</b> · 样本:本周全量商家 · 归因窗口 7 日,延迟回传未完全到齐</span>');
+}
+
+/* =========================================================
+   悬浮运营助手 · 全站右侧抽屉
+   助手不占侧边栏,任何页面都能唤起;问答记录跨页面保留。
+   ========================================================= */
+function initAssistant(){
+  const mk = document.getElementById('dwMk');   if(mk)  mk.innerHTML = icon('robot',16);
+  const fi = document.getElementById('fabIco'); if(fi)  fi.innerHTML = icon('robot',22);
+  if(!CHAT.length){
+    CHAT.push({ who:'ai', html:
+      '本助手基于「打法卡」知识库做关键词检索后作答，不接入大模型。每条回答下方的'
+      + '<b>检索明细</b>可展开复核每次引用了哪张卡、匹配度多少；同一问题每次给出相同结果。'
+      + '<br><br>可直接提问，或使用下方快捷问题。' });
+  }
+  const qi = document.getElementById('dwQuick');
+  if(qi) qi.innerHTML =
+      '<button class="btn-ghost" onclick="scanAnomalies()">'+icon('alert',14)+' 批量筛查异常商家</button>'
+    + '<button class="btn-ghost" onclick="genReport()">'+icon('book',14)+' 生成本周行业周报</button>';
+  const ch = document.getElementById('dwChips');
+  if(ch) ch.innerHTML = PRESETS.map(function(p,i){
+    return '<button class="chip-q" onclick="askIdx('+i+')">'+p+'</button>';
+  }).join('');
+  updateDwCtx();
+  renderChat();
+}
+
+function openDrawer(){
+  const d = document.getElementById('drawer');
+  if(!d) return;
+  updateDwCtx();
+  d.classList.add('on');
+  const m = document.getElementById('dwMask'); if(m) m.classList.add('on');
+  const q = document.getElementById('qin');
+  if(q) setTimeout(function(){ q.focus(); }, 240);
+}
+function closeDrawer(){
+  const d = document.getElementById('drawer'); if(d) d.classList.remove('on');
+  const m = document.getElementById('dwMask'); if(m) m.classList.remove('on');
+}
+function updateDwCtx(){
+  const el = document.getElementById('dwCtx');
+  if(!el) return;
+  const k = currentKey();
+  el.textContent = k==='diagnosis'
+    ? '当前 · 商家诊断（'+state.merchant+'）'
+    : '当前 · ' + (PAGES[k] ? PAGES[k].title : '平台');
+
+  /* 上下文开关必须显式可见:上一版抽屉顶部写着「当前 · 商家诊断」,
+     但 ask() 其实完全不读商家数据——界面承诺了它做不到的事。
+     要么做到,要么别写。现在是做到,并且让使用者能关掉。 */
+  const bar = document.getElementById('dwCtxBar');
+  if(!bar) return;
+  const desc = ctxDesc();
+  bar.innerHTML = desc
+    ? '<button class="ctxchip'+(state.dwCtx===false?' off':'')+'" onclick="toggleDwCtx()">'
+      + icon(state.dwCtx===false?'alert':'check',12)
+      + (state.dwCtx===false ? '未带上下文' : '带上上下文 · '+desc.short) + '</button>'
+      + '<span class="ctxhint">'+(state.dwCtx===false
+          ? '回答只基于知识库检索'
+          : '回答会先代入当前页面的读数,再检索知识库')+'</span>'
+    : '<span class="ctxhint">平台级视图,无商家上下文</span>';
+}
+
+/* 当前页面能提供什么上下文 */
+function ctxDesc(){
+  const k = currentKey();
+  if(k === 'diagnosis'){
+    const d = diagFor(state.merchant);
+    const bp = breakpointOf(d);
+    return { short: state.merchant, kind:'merchant', d:d, bp:bp };
+  }
+  if(k === 'merchants'){
+    /* 助手看到的「视图」要和页面上真正显示的行数一致,否则筛选后助手会报错数 */
+    const f   = state.tier;
+    const arr = MERCHANTS.filter(function(m){
+      return (f==='全部' || m.tier===f) && (!state.riskOnly || m.health < HEALTH_RISK);
+    });
+    return { short: f+' '+arr.length+' 家'+(state.riskOnly ? '（仅风险商家，健康度 <'+HEALTH_RISK+'）' : ''),
+             kind:'tier', tier:f, arr:arr };
+  }
+  if(k === 'knowledge') return { short:'知识库', kind:'kb' };
+  return { short:'平台大盘', kind:'platform' };
+}
+
+function toggleDwCtx(){ state.dwCtx = state.dwCtx === false; updateDwCtx(); }
+
+/* 回答前置的上下文块。检索本身不变,只是把「站在哪看的」先说清楚 */
+function ctxBlock(){
+  if(state.dwCtx === false) return '';
+  const c = ctxDesc();
+  let body;
+  if(c.kind === 'merchant'){
+    const d = c.d, m = MERCHANTS.filter(function(x){ return x.name === state.merchant; })[0];
+    const ec = unitEcon(d, m);
+    const a  = openActionOf(state.merchant);
+    const mt = metricOf(d, c.bp);
+    body = '<b>'+state.merchant+'</b>（'+(d.sector||'')+' · '+(d.tier||'')+'）· 健康度 <b>'+d.health+'</b>'
+      + '<br>断点位置 <b>'+(c.bp.kind === 'none' ? '链路无显著断点' : mt.name + ' 所在的环节')+'</b>'
+      + ' · 主指标 <b>'+mt.base+'</b>'
+      + (ec ? '<br>LTV/CPA <b>'+ec.ratio.toFixed(1)+'×</b> · '+(ec.ok?'经济性达标':'经济性偏紧') : '')
+      + '<br>处置状态 <b>'+(a ? a.id+' 观察中 · 剩 '+daysLeftOf(a)+' 天 · 负责人 '+a.owner
+                                   : '未登记')+'</b>';
+  } else if(c.kind === 'tier'){
+    const arr = c.arr;
+    const sp  = arr.reduce(function(s,m){ return s+m.spend; }, 0);
+    const bad = arr.filter(function(m){ return m.health < HEALTH_RISK; }).length;
+    body = '视图 <b>'+c.tier+'</b>'+(state.riskOnly ? '（已筛风险商家，健康度 <'+HEALTH_RISK+'）' : '')
+      + ' · '+arr.length+' 家 · 合计消耗 <b>'+sp.toFixed(1)+' 万</b>'
+      + ' · 健康度低于 '+HEALTH_RISK+' 的 <b>'+bad+'</b> 家';
+  } else if(c.kind === 'kb'){
+    body = '知识库共 <b>'+CARDS.length+'</b> 张打法卡 · 有引用记录 <b>'
+      + CARDS.filter(function(x){ return refsOf(x.id) > 0; }).length+'</b> 张'
+      + ' · 产品需求 <b>'+NEEDS.length+'</b> 条 · 其中方案在建 <b>'
+      + NEEDS.filter(function(n){ return NEED_SHOW.indexOf(n.status) >= 0; }).length+'</b> 条';
+  } else {
+    const p = DATA.platform;
+    body = '平台大盘 · 在投商家 <b>'+p.activeMch.toLocaleString()+'</b> 家'
+         + ' · 本月消耗 <b>'+p.spend+' 亿</b> · 平台广告收入 <b>'+p.revenue+' 亿</b>';
+  }
+  return '<div class="ctxblk"><span class="tag">'+icon('target',12)+'上下文 · '+c.short+'</span>'
+       + '<div class="bd">'+body+'</div></div>';
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){ closeDrawer(); closeMsDrop(); }
+});
+/* 点击抽屉/搜索框以外的地方收起下拉 */
+document.addEventListener('click', function(e){
+  const ms = document.getElementById('msearch');
+  if(ms && !ms.contains(e.target)) closeMsDrop();
+});
+
+/* ---- 页面渲染后需要执行的初始化 ---- */
+const AFTER = {
+  diagnosis: function(){ calcCpa(); },
+};
+const RENDER = {
+  overview : pageOverview,
+  merchants: pageMerchants,
+  diagnosis: pageDiagnosis,
+  knowledge: pageKnowledge
+};
+
+/* =========================================================
+   外壳渲染
+   ========================================================= */
+function currentKey(){
+  const k = (location.hash||'').replace('#/','') || 'overview';
+  return RENDER[k] ? k : 'overview';
+}
+function go(key){
+  const h = '#/'+key;
+  /* 「刚刚沉淀 / 刚刚登记」的回执只在知识库页有效,离开就撤掉 */
+  if(key !== 'knowledge'){ state.justCreated = null; state.justNeed = null; }
+  if(location.hash === h) renderShell();   // 同一页内也要重渲染(如切换商家)
+  else location.hash = h;
+}
+/* 从大盘告警下钻:自动把该商家设为当前诊断对象 */
+function onAlert(name){
+  state.merchant = name;
+  go('diagnosis');
+}
+/* 从商家列表下钻 */
+function openMerchant(name){
+  state.merchant = name;
+  go('diagnosis');
+}
+function setTier(t){ state.tier = t; renderShell(); }
+function toggleRisk(){ state.riskOnly = !state.riskOnly; renderShell(); }
+function toggleTierNote(){ state.tierNoteOpen = !state.tierNoteOpen; renderShell(); }
+function toggleHealthNote(){ state.healthNoteOpen = !state.healthNoteOpen; renderShell(); }
+
+function renderShell(){
+  document.getElementById('brandMark').innerHTML = icon('sparkle',19);
+  document.getElementById('aboutIco').innerHTML  = icon('info',16);
+  document.getElementById('icoBell').innerHTML   = icon('bell',18);
+  document.getElementById('msIco').innerHTML     = icon('search',15);
+
+  const k = currentKey();
+
+  /* 商家搜索只在「针对单个商家」的页面出现;大盘面向全部商家,不设此项 */
+  const ms = document.getElementById('msearch');
+  if(ms) ms.style.display = SEARCH_PAGES.indexOf(k) >= 0 ? '' : 'none';
+  if(SEARCH_PAGES.indexOf(k) < 0) closeMsDrop();
+  document.getElementById('nav').innerHTML = ORDER.map(function(id){
+    const p = PAGES[id];
+    return '<a class="nav-item'+(id===k?' on':'')+'" href="#/'+id+'">'
+      + icon(p.ico,18) + '<span>'+p.title+'</span>'
+      + (p.badge ? '<span class="nav-badge">'+p.badge+'</span>' : '')
+      + '</a>';
+  }).join('');
+  document.getElementById('mnav').innerHTML = ORDER.map(function(id){
+    const p = PAGES[id];
+    return '<a class="'+(id===k?'on':'')+'" href="#/'+id+'">'+icon(p.ico,20)+'<span>'+p.title.replace(' / 沉淀','')+'</span></a>';
+  }).join('');
+
+  document.getElementById('pageTitle').textContent = PAGES[k].title;
+  document.getElementById('pageSub').textContent   = PAGES[k].sub;
+  document.getElementById('view').innerHTML        = RENDER[k]();
+  window.scrollTo(0,0);
+  updateDwCtx();                 // 助手抽屉顶部显示当前页面上下文
+  if(AFTER[k]) AFTER[k]();       // 页面挂载后的初始化(如 CPA 计算)
+}
+window.addEventListener('hashchange', renderShell);
+
+/* =========================================================
+   商家搜索(模糊匹配)
+   评分优先级:完全相等 > 子串命中(越靠前越高) > 子序列命中 > 公共字符覆盖率
+   大小写不敏感;结果按分数降序,最多 8 条。
+   ========================================================= */
+function fuzzScore(name, q){
+  const n = name.toLowerCase();
+  if(n === q) return 1000;
+  const at = n.indexOf(q);
+  if(at >= 0) return 800 - at * 4 - n.length;           // 子串命中,越靠前越好
+  let i = 0;                                            // 子序列命中(如 "bs" → "BBB店家"? 不,按字符)
+  for(let k=0;k<n.length && i<q.length;k++){ if(n[k] === q[i]) i++; }
+  if(i === q.length) return 500 - (n.length - q.length) * 6;
+  const pool = n.split(''); let common = 0;             // 公共字符覆盖率
+  for(let k=0;k<q.length;k++){
+    const p = pool.indexOf(q[k]);
+    if(p >= 0){ common++; pool.splice(p,1); }
+  }
+  return common ? common / q.length * 260 : 0;
+}
+function searchMerchants(q){
+  const s = (q||'').trim().toLowerCase();
+  const pool = MERCHANTS.map(function(m){
+    return { m:m, score: s ? fuzzScore(m.name, s) : 100 - m.health };
+  }).filter(function(x){ return x.score > 0; });
+  pool.sort(function(a,b){ return b.score - a.score; });
+  return pool.slice(0, 8);
+}
+function hlName(name, q){
+  if(!q) return name;
+  const i = name.toLowerCase().indexOf(q.toLowerCase());
+  if(i < 0) return name;
+  return name.slice(0,i) + '<b>' + name.slice(i, i+q.length) + '</b>' + name.slice(i+q.length);
+}
+function onMerchantSearch(){
+  const inp = document.getElementById('msInput'), drop = document.getElementById('msDrop');
+  if(!inp || !drop) return;
+  const q = inp.value.trim();
+  const res = searchMerchants(q);
+  drop.innerHTML = '<div class="ms-hd">' + (q ? '匹配到 ' + res.length + ' 家' : '全部商家 · 风险优先') + '</div>'
+    + (res.length
+        ? res.map(function(r){
+            return '<div class="ms-item'+(r.m.name===state.merchant?' on':'')+'" onclick="pickMerchant(\''+r.m.name+'\')">'
+              + '<span class="ms-name">'+hlName(r.m.name, q)+'</span>'
+              + tierPill(r.m.tier, r.m)
+              + '<span class="ms-spend">'+r.m.spend.toFixed(1)+' 万</span>'
+              + '</div>';
+          }).join('')
+        : '<div class="ms-empty">没有匹配的商家<br><span style="font-size:11.5px">试试输入「店家」「案例」或商家名的一部分</span></div>');
+  drop.classList.add('on');
+}
+function closeMsDrop(){
+  const d = document.getElementById('msDrop');
+  if(d) d.classList.remove('on');
+}
+function focusMerchantSearch(){
+  const inp = document.getElementById('msInput');
+  if(inp){ inp.focus(); onMerchantSearch(); }
+}
+function pickMerchant(name){
+  const inp = document.getElementById('msInput');
+  if(inp) inp.value = '';
+  closeMsDrop();
+  state.merchant = name;
+  go('diagnosis');
+}
+
+/* ---- 产品矩阵定位弹窗 ---- */
+function openMatrix(){
+  const rows = DATA.matrix.map(function(r){
+    return '<div class="mrow'+(r.me?' me':'')+'">'
+      + '<span class="stage">'+r.stage+'</span>'
+      + '<span class="prod">'+r.prod+'</span>'
+      + '<span class="tag">'+r.tag+'</span>'
+      + '</div>';
+  }).join('');
+  const el = document.createElement('div');
+  el.className = 'mask';
+  el.onclick = function(e){ if(e.target===el) el.remove(); };
+  el.innerHTML = '<div class="modal">'
+    + '<div class="modal-h">'+icon('info',18)+'<h3>本作品在商业产品矩阵中的位置</h3>'
+    + '<button class="x" onclick="this.closest(\'.mask\').remove()">✕</button></div>'
+    + '<div class="modal-b">'
+    + '<p style="margin:0 0 14px;font-size:13px;color:var(--t2);line-height:1.7">'
+    + '小红书商业化是一整套产品矩阵。本作品<b style="color:var(--t1)">只聚焦其中的「商家客户资产与经营诊断」环节</b>——'
+    + '即平台侧运营如何管理商家、诊断其经营问题，并把个案沉淀为可复用的能力。</p>'
+    + '<div class="matrix">'+rows+'</div>'
+    + '<div class="hr"></div>'
+    + '<p style="margin:0;font-size:12.5px;color:var(--t3);line-height:1.7">'
+    + '个案沉淀有两条出口：<b style="color:var(--t1)">打法卡</b>给商家复用，'
+    + '设计上可供矩阵内其他产品（聚光的投放建议、千帆的经营指引）复用；'
+    + '<b style="color:var(--t1)">产品需求</b>则把商家侧修不了的断点（模型 / 回传 / 审核 / 报表）'
+    + '升格成平台能力需求，交回产品与算法。'
+    + '本作品为面试演示，全部数据为虚构，不代表任何平台真实经营数据。</p>'
+    + '</div></div>';
+  document.body.appendChild(el);
+}
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){ const m=document.querySelector('.mask'); if(m) m.remove(); }
+});
+
+/* boot */
+initAssistant();
+renderShell();
+</script>
+</body>
+</html>
