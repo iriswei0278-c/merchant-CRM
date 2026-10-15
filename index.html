@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>商家经营 CRM · 小红书商业化</title>
-<meta name="description" content="面向小红书商业化平台侧运营的商家经营 CRM 演示：商业化大盘、商家分层管理、消费者转化链路断点诊断，以及打法卡与产品需求两种沉淀物的闭环。单文件纯前端作品，全部数据为虚构。">
+<title>商家经营 CRM · 商业化平台侧</title>
+<meta name="description" content="面向商业化平台侧运营的商家经营 CRM 演示：商业化大盘、商家分层管理、消费者转化链路断点诊断，以及打法卡与产品需求两种沉淀物的闭环。单文件纯前端作品，全部数据为虚构。">
 <style>
 :root{
   --red:#FF2442; --red-600:#E51E3A; --red-700:#C4162E; --red-50:#FFF1F3; --red-100:#FFE0E5;
@@ -802,7 +802,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:99px;ba
       <div class="brand-mark" id="brandMark"></div>
       <div class="brand-txt">
         <strong>商家经营 CRM</strong>
-        <span>小红书商业化</span>
+        <span>商业化平台侧</span>
       </div>
     </div>
     <div class="nav-label">工作台</div>
@@ -1002,9 +1002,9 @@ const DATA = {
     { sev:'low',  mch:'DDD店家',      what:'素材审核驳回率异常',             tag:'资质问题', time:'昨天' }
   ],
   matrix : [
-    { stage:'投放获客', prod:'聚光 · 广告投放平台', tag:'广告流量与投放策略' },
-    { stage:'内容/达人', prod:'蒲公英 · 达人合作平台', tag:'内容种草' },
-    { stage:'店铺经营', prod:'千帆 · 商家经营平台', tag:'交易与私域' },
+    { stage:'投放获客', prod:'广告投放平台', tag:'广告流量与投放策略' },
+    { stage:'内容/达人', prod:'达人合作平台', tag:'内容种草' },
+    { stage:'店铺经营', prod:'商家经营平台', tag:'交易与私域' },
     { stage:'客户资产', prod:'商家经营 CRM', tag:'★ 本作品', me:true },
     { stage:'能力开放', prod:'开放平台 · Open API', tag:'能力输出' }
   ]
@@ -3468,13 +3468,13 @@ function openMatrix(){
     + '<button class="x" onclick="this.closest(\'.mask\').remove()">✕</button></div>'
     + '<div class="modal-b">'
     + '<p style="margin:0 0 14px;font-size:13px;color:var(--t2);line-height:1.7">'
-    + '小红书商业化是一整套产品矩阵。本作品<b style="color:var(--t1)">只聚焦其中的「商家客户资产与经营诊断」环节</b>——'
+    + '平台商业化是一整套产品矩阵。本作品<b style="color:var(--t1)">只聚焦其中的「商家客户资产与经营诊断」环节</b>——'
     + '即平台侧运营如何管理商家、诊断其经营问题，并把个案沉淀为可复用的能力。</p>'
     + '<div class="matrix">'+rows+'</div>'
     + '<div class="hr"></div>'
     + '<p style="margin:0;font-size:12.5px;color:var(--t3);line-height:1.7">'
     + '个案沉淀有两条出口：<b style="color:var(--t1)">打法卡</b>给商家复用，'
-    + '设计上可供矩阵内其他产品（聚光的投放建议、千帆的经营指引）复用；'
+    + '设计上可供矩阵内其他产品（投放平台的投放建议、商家后台的经营指引）复用；'
     + '<b style="color:var(--t1)">产品需求</b>则把商家侧修不了的断点（模型 / 回传 / 审核 / 报表）'
     + '升格成平台能力需求，交回产品与算法。'
     + '本作品为面试演示，全部数据为虚构，不代表任何平台真实经营数据。</p>'
